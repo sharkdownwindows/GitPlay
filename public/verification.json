@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-15T02:00:00.000Z",
+  "commitSha": "0000000000000000000000000000000000000000",
+  "gitVersion": "git version 2.51.0",
+  "nodeVersion": "v24.20.0",
+  "diffTest": {
+    "totalCases": 0,
+    "passed": 0,
+    "failed": 0,
+    "warnings": 0,
+    "exhaustiveDepth": 0,
+    "randomCases": 0,
+    "seed": 1,
+    "durationMs": 0
+  },
+  "coverage": {
+    "commit": 0,
+    "branch": 0,
+    "switch": 0,
+    "checkout": 0,
+    "merge": 0
+  },
+  "scaling": [
+    {
+      "label": "layout()",
+      "points": [
+        { "n": 100, "medianMs": 0, "p95Ms": 0, "iterations": 0 },
+        { "n": 1000, "medianMs": 0, "p95Ms": 0, "iterations": 0 },
+        { "n": 10000, "medianMs": 0, "p95Ms": 0, "iterations": 0 },
+        { "n": 100000, "medianMs": 0, "p95Ms": 0, "iterations": 0 }
+      ]
+    }
+  ],
+  "divergences": []
+}

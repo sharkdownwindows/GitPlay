@@ -1,0 +1,35 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  deep:
+    name: diff-test depth 4 + benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Phiên bản git của runner
+        run: git --version
+
+      - name: Differential test (vét cạn depth 4)
+        run: npm run diff:deep
+
+      - name: Benchmark layout
+        run: npm run bench
+
+      - name: Gộp → public/verification.json
+        run: npm run report
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verification
+          path: public/verification.json
