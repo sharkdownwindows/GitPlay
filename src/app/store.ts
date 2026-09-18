@@ -1,5 +1,6 @@
 import { useCallback, useReducer } from "react";
 import { execute } from "../core/engine";
+import { parse } from "../terminal/parse";
 import { emptyState, type Command, type RepoState } from "../core/types";
 
 /**
@@ -17,6 +18,7 @@ export interface AppState {
 }
 
 export type Action =
+  | { type: "exec"; input: string }
   | { type: "run"; command: Command }
   | { type: "undo" }
   | { type: "redo" }
@@ -28,6 +30,23 @@ export function initialAppState(repo: RepoState = emptyState()): AppState {
 
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
+    case "exec": {
+      const parsed = parse(action.input);
+
+      // ParseError có field `ok`, Command thì không.
+      if ("ok" in parsed) {
+        return {
+          ...state,
+          output: [...state.output, ...parsed.output],
+        };
+      }
+
+      // Parse thành công -> dùng lại logic run hiện có.
+      return reducer(state, {
+        type: "run",
+        command: parsed,
+      });
+    }
     case "run": {
       const result = execute(state.repo, action.command);
       if (!result.ok) {
@@ -69,5 +88,9 @@ export function reducer(state: AppState, action: Action): AppState {
 export function useRepo(initial?: RepoState) {
   const [state, dispatch] = useReducer(reducer, initial, initialAppState);
   const run = useCallback((command: Command) => dispatch({ type: "run", command }), []);
-  return { state, dispatch, run };
+   const exec = useCallback(
+    (input: string) => dispatch({ type: "exec", input }),
+    [],
+  );
+  return { state, dispatch, run, exec };
 }
