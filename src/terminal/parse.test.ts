@@ -40,6 +40,7 @@ describe("parse", () => {
       kind: "switch",
       target: "main",
       detach: false,
+      create: false,
     });
   });
 
@@ -48,6 +49,16 @@ describe("parse", () => {
       kind: "switch",
       target: "C2",
       detach: true,
+      create: false,
+    });
+  });
+
+  it("parses git switch -c", () => {
+    expect(parse("git switch -c feature")).toEqual({
+      kind: "switch",
+      target: "feature",
+      detach: false,
+      create: true,
     });
   });
 
@@ -55,6 +66,15 @@ describe("parse", () => {
     expect(parse("git checkout C2")).toEqual({
       kind: "checkout",
       target: "C2",
+      create: false,
+    });
+  });
+
+  it("parses git checkout -b", () => {
+    expect(parse("git checkout -b feature")).toEqual({
+      kind: "checkout",
+      target: "feature",
+      create: true,
     });
   });
 
@@ -66,38 +86,65 @@ describe("parse", () => {
   });
 
   it("rejects empty input", () => {
-    expect(parse("")).toEqual({
-      errorClass: "UnknownCommand",
+    expect(parse("")).toMatchObject({
+      ok: false,
+      errorClass: "NotGitCommand",
     });
   });
 
   it("rejects non-git command", () => {
-    expect(parse("commit")).toEqual({
-      errorClass: "UnknownCommand",
+    expect(parse("commit")).toMatchObject({
+      ok: false,
+      errorClass: "NotGitCommand",
     });
   });
 
   it("rejects unknown subcommand", () => {
-    expect(parse("git foobar")).toEqual({
-      errorClass: "UnknownCommand",
+    expect(parse("git foobar")).toMatchObject({
+      ok: false,
+      errorClass: "UnknownSubcommand",
     });
   });
 
   it("rejects missing commit message", () => {
-    expect(parse("git commit -m")).toEqual({
+    expect(parse("git commit -m")).toMatchObject({
+      ok: false,
       errorClass: "MissingArgument",
     });
   });
 
   it("rejects merge without branch", () => {
-    expect(parse("git merge")).toEqual({
+    expect(parse("git merge")).toMatchObject({
+      ok: false,
       errorClass: "MissingArgument",
     });
   });
 
   it("rejects switch without target", () => {
-    expect(parse("git switch")).toEqual({
+    expect(parse("git switch")).toMatchObject({
+      ok: false,
       errorClass: "MissingArgument",
+    });
+  });
+
+  it("rejects switch -c without branch name", () => {
+    expect(parse("git switch -c")).toMatchObject({
+      ok: false,
+      errorClass: "MissingArgument",
+    });
+  });
+
+  it("rejects checkout -b without branch name", () => {
+    expect(parse("git checkout -b")).toMatchObject({
+      ok: false,
+      errorClass: "MissingArgument",
+    });
+  });
+
+  it("trims surrounding whitespace", () => {
+    expect(parse("   git branch feature   ")).toEqual({
+      kind: "branch",
+      name: "feature",
     });
   });
 });
