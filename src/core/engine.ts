@@ -24,9 +24,9 @@ export function execute(state: RepoState, command: Command): Result {
       case "branch":
         return branch(state, command.name);
       case "switch":
-        return switchTo(state, command.target, command.detach);
+        return switchTo(state, command.target, command.detach, command.create);
       case "checkout":
-        return checkout(state, command.target);
+        return checkout(state, command.target, command.create);
       case "merge":
         return merge(state, command.branch);
       default: {
