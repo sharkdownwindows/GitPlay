@@ -84,11 +84,23 @@ export interface RepoState {
 export type Command =
   | { kind: "commit"; message?: string }
   | { kind: "branch"; name?: string }
-  | { kind: "switch"; target: string; detach: boolean }
-  | { kind: "checkout"; target: string }
+  | { kind: "switch"; target: string; detach: boolean; create: boolean }
+  | { kind: "checkout"; target: string; create: boolean }
   | { kind: "merge"; branch: string };
 
 export type CommandKind = Command["kind"];
+
+/**
+ * Kết quả parse thất bại — lỗi hình thức (cú pháp), phát hiện TRƯỚC khi có state.
+ * Dùng chung `ErrorClass` với engine vì với người dùng đây cùng là một lớp
+ * thông báo lỗi; khác biệt là Result còn có `state`, ParseError thì không —
+ * chưa build được Command thì chưa có state nào để trả lại.
+ */
+export interface ParseError {
+  ok: false;
+  output: string[];
+  errorClass: ErrorClass;
+}
 
 // ─── Lỗi ─────────────────────────────────────────────────────────────────────
 
@@ -98,6 +110,8 @@ export type CommandKind = Command["kind"];
  * Vì vậy sửa câu chữ thông báo không làm đỏ CI, nhưng sai lớp lỗi thì có.
  */
 export type ErrorClass =
+  | "NotGitCommand"
+  | "UnknownSubcommand"
   | "MissingArgument"
   | "InvalidRefName"
   | "BranchAlreadyExists"

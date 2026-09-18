@@ -2,6 +2,8 @@ import type { ErrorClass, Result, RepoState } from "./types";
 
 /** Chuỗi lỗi khớp NGUYÊN VĂN Git thật — harness so chúng như dữ liệu. */
 export const ERROR_TEXT: Record<ErrorClass, string> = {
+  NotGitCommand: "{0}: command not found",
+  UnknownSubcommand: "git: '{0}' is not a git command. See 'git --help'.",
   MissingArgument: "fatal: you must specify a target",
   InvalidRefName: "fatal: invalid reference name",
   BranchAlreadyExists: "fatal: a branch named '{0}' already exists",
