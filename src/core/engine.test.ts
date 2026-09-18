@@ -5,8 +5,8 @@ import { emptyState, type Command } from "./types";
 const ALL_KINDS: Command[] = [
   { kind: "commit", message: "hello" },
   { kind: "branch", name: "feature" },
-  { kind: "switch", target: "main", detach: false },
-  { kind: "checkout", target: "main" },
+  { kind: "switch", target: "main", detach: false, create: false },
+  { kind: "checkout", target: "main", create: false },
   { kind: "merge", branch: "feature" },
 ];
 
