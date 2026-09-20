@@ -5,7 +5,8 @@ import { CommitNode } from "./CommitNode";
 import { RefLabel } from "./RefLabel";
 
 export interface GraphViewProps {
-  state: RepoState;
+  state?: RepoState;
+  repoState?: RepoState;
   className?: string;
   width?: number | string;
   height?: number | string;
@@ -13,16 +14,26 @@ export interface GraphViewProps {
 
 export function GraphView({
   state,
+  repoState,
   className = "",
   width = "100%",
   height = "100%",
 }: GraphViewProps) {
-  const graphLayout = layout(state);
+  const currentRepo = state ?? repoState ?? {
+    commits: {},
+    branches: {},
+    head: { detached: false, ref: "main", commit: null },
+    snapshot: null,
+    workingTree: null,
+    index: null,
+    conflicts: null,
+  };
+  const graphLayout = layout(currentRepo);
 
   // Nhóm các branch theo commitId
   const branchesByCommit = new Map<string, string[]>();
-  if (state.branches) {
-    for (const [branchName, commitId] of Object.entries(state.branches)) {
+  if (currentRepo.branches) {
+    for (const [branchName, commitId] of Object.entries(currentRepo.branches)) {
       if (!commitId) continue;
       const list = branchesByCommit.get(commitId) ?? [];
       list.push(branchName);
@@ -32,8 +43,8 @@ export function GraphView({
 
   // Chuyển commits sang map để lookup nhanh thông tin commit
   const commitMap = new Map<string, Commit>();
-  if (state.commits) {
-    for (const [id, c] of Object.entries(state.commits)) {
+  if (currentRepo.commits) {
+    for (const [id, c] of Object.entries(currentRepo.commits)) {
       commitMap.set(id, c);
     }
   }
@@ -61,11 +72,11 @@ export function GraphView({
 
   // Tính toán viewBox linh hoạt:
   // Nếu có HEAD detached ở bên trái, mở rộng minX về âm để nhãn hiển thị trọn vẹn mà không cắt góc
-  const isDetached = Boolean(state.head?.detached && state.head.commit);
-  const minX = isDetached ? -160 : -20;
+  const isDetached = Boolean(currentRepo.head?.detached && currentRepo.head.commit);
+  const minX = isDetached ? -200 : -100;
   const minY = -10;
   const svgWidth = isDetached
-    ? Math.max(graphLayout.width + 160 + 200, 520)
+    ? Math.max(graphLayout.width + 100 + 200, 520)
     : Math.max(graphLayout.width + 200 + 20, 400);
   const svgHeight = Math.max(graphLayout.height + 40, 220);
 
@@ -110,12 +121,12 @@ export function GraphView({
           {graphLayout.nodes.map((node) => {
             const commit = commitMap.get(node.id);
             const isDetachedHere =
-              state.head?.detached && state.head.commit === node.id;
+              currentRepo.head?.detached && currentRepo.head.commit === node.id;
             const branchesHere = branchesByCommit.get(node.id) || [];
             const isAttachedHere =
-              !state.head?.detached &&
-              state.head?.ref !== null &&
-              branchesHere.includes(state.head.ref);
+              !currentRepo.head?.detached &&
+              currentRepo.head?.ref !== null &&
+              branchesHere.includes(currentRepo.head.ref);
 
             return (
               <CommitNode
@@ -138,7 +149,7 @@ export function GraphView({
                 key={`refs-${node.id}`}
                 node={node}
                 branches={branches}
-                head={state.head}
+                head={currentRepo.head}
               />
             );
           })}
