@@ -43,18 +43,41 @@ describe("terminal/parse.ts", () => {
       kind: "switch",
       target: "main",
       detach: false,
+      create: false,
     });
     expect(parseCommand("git switch -d c1")).toEqual({
       kind: "switch",
       target: "c1",
       detach: true,
+      create: false,
     });
   });
 
-  it("parse checkout command", () => {
+  it("parse switch command với flag -c / --create tạo branch mới", () => {
+    expect(parseCommand("git switch -c feature")).toEqual({
+      kind: "switch",
+      target: "feature",
+      detach: false,
+      create: true,
+    });
+    expect(parseCommand("git switch --create new-branch")).toEqual({
+      kind: "switch",
+      target: "new-branch",
+      detach: false,
+      create: true,
+    });
+  });
+
+  it("parse checkout command với flag -b tạo branch mới", () => {
     expect(parseCommand("git checkout feature")).toEqual({
       kind: "checkout",
       target: "feature",
+      create: false,
+    });
+    expect(parseCommand("git checkout -b hotfix")).toEqual({
+      kind: "checkout",
+      target: "hotfix",
+      create: true,
     });
   });
 

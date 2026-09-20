@@ -59,21 +59,33 @@ export function parseCommand(input: string): Command {
 
     case "switch": {
       let detach = false;
+      let create = false;
       let target = "";
       for (let i = 1; i < tokens.length; i++) {
         const token = tokens[i] ?? "";
         if (token === "-d" || token === "--detach") {
           detach = true;
+        } else if (token === "-c" || token === "--create") {
+          create = true;
         } else if (!target) {
           target = token;
         }
       }
-      return { kind: "switch", target, detach };
+      return { kind: "switch", target, detach, create };
     }
 
     case "checkout": {
-      const target = tokens[1] ?? "";
-      return { kind: "checkout", target };
+      let create = false;
+      let target = "";
+      for (let i = 1; i < tokens.length; i++) {
+        const token = tokens[i] ?? "";
+        if (token === "-b") {
+          create = true;
+        } else if (!target) {
+          target = token;
+        }
+      }
+      return { kind: "checkout", target, create };
     }
 
     case "merge": {

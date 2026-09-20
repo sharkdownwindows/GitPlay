@@ -84,8 +84,8 @@ export interface RepoState {
 export type Command =
   | { kind: "commit"; message?: string }
   | { kind: "branch"; name?: string }
-  | { kind: "switch"; target: string; detach: boolean }
-  | { kind: "checkout"; target: string }
+  | { kind: "switch"; target: string; detach: boolean; create: boolean }
+  | { kind: "checkout"; target: string; create: boolean }
   | { kind: "merge"; branch: string };
 
 export type CommandKind = Command["kind"];
