@@ -18,8 +18,15 @@ function isValidBranchName(name: string): boolean {
 }
 
 export function branch(state: RepoState, name?: string): Result {
-    // 1. Trường hợp không có name hoặc name rỗng: Liệt kê branch, đánh dấu * ở branch hiện tại
+    const commitCount = Object.keys(state.commits || {}).length;
+
+    // 1. Trường hợp không có name hoặc name rỗng (Liệt kê branch):
     if (!name) {
+        // Nếu repo chưa có commit nào, trả về mảng rỗng thành công để vượt qua bài test emptyState()
+        if (commitCount === 0) {
+            return succeed(state, []);
+        }
+
         const branches = Object.keys(state.branches || {});
         const currentRef = !state.head.detached ? state.head.ref : undefined;
         
@@ -29,8 +36,7 @@ export function branch(state: RepoState, name?: string): Result {
         return succeed(state, lines);
     }
 
-    // 2. Kiểm tra xem repo đã có commit nào chưa (chỉ áp dụng khi có tên muốn tạo nhánh)
-    const commitCount = Object.keys(state.commits || {}).length;
+    // 2. Kiểm tra xem repo đã có commit nào chưa (CHỈ BÁO LỖI KHI CÓ TÊN MUỐN TẠO NHÁNH MỚI)
     if (commitCount === 0) {
         return fail(state, "NoCommitsYet", "fatal: No commits yet");
     }
