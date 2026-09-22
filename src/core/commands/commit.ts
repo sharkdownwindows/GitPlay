@@ -1,8 +1,8 @@
-import { succeed, fail } from "../errors";
+import { succeed } from "../errors";
 import type { RepoState, Result, Commit } from "../types";
 
-export function commit(state: RepoState, cmd: { kind: "commit"; message?: string }): Result {
-    const message = cmd.message ?? "";
+export function commit(state: RepoState, message?: string): Result {
+    const resolvedMessage = message ?? "";
 
     // 1. Xác định commit cha (parents) và nhánh/vị trí hiện tại dựa theo cấu trúc Head chuẩn
     let parents: string[] = [];
@@ -26,9 +26,9 @@ export function commit(state: RepoState, cmd: { kind: "commit"; message?: string
     // 3. Tạo object commit mới (lấy thêm thời gian giả định hoặc ISO string để khớp type)
     const newCommit: Commit = {
         id: newCommitId,
-        message: message,
+        message: resolvedMessage,
         parents: parents,
-        timestamp: new Date().toISOString(), // Hoặc lấy từ engine nếu có quy định riêng
+        timestamp: new Date().toISOString(),
     };
 
     // 4. Sao chép và cập nhật lại state (đảm bảo tính bất biến)
@@ -55,4 +55,5 @@ export function commit(state: RepoState, cmd: { kind: "commit"; message?: string
         head: newHead,
     };
 
-    return succeed(updatedState, [`[master ${newCommitId}] ${message}`]); }
+    return succeed(updatedState, [`[master \({newCommitId}]\){resolvedMessage}`]);
+}
