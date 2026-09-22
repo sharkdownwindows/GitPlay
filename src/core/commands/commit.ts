@@ -55,4 +55,4 @@ export function commit(state: RepoState, cmd: { kind: "commit"; message?: string
         head: newHead,
     };
 
-    return succeed(updatedState, [`[master ${newCommitId}] ${message}`]);
+    return succeed(updatedState, [`[master ${newCommitId}] ${message}`]); }
