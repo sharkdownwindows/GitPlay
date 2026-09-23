@@ -40,7 +40,7 @@ export function commit(state: RepoState, message?: string): Result {
 
     const newBranches = { ...branches };
     let newHead = { ...currentHead };
-    let label: string;
+    let label: string = "";
 
     // 4. Cập nhật nhánh hoặc detached head đúng chuẩn
     if (!currentHead.detached) {
