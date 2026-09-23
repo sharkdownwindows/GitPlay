@@ -1,7 +1,11 @@
 import { succeed, fail } from "../errors";
 import type { RepoState, Result } from "../types";
 
-// Hàm kiểm tra tên branch có hợp lệ không (tập con theo yêu cầu M2)
+/**
+ * Hàm kiểm tra tên branch có hợp lệ không (tập con theo yêu cầu M2).
+ * Lưu ý: Đây là tập con có chủ đích, không đầy đủ hoàn toàn so với git check-ref-format thực tế.
+ * Các trường hợp từ chối: chuỗi rỗng, bắt đầu bằng - hoặc ., chứa khoảng trắng hoặc ký tự cấm (~ ^ : ? * [ \), chứa .., kết thúc bằng . hoặc .lock.
+ */
 function isValidBranchName(name: string): boolean {
     if (!name || name.length === 0) return false;
     if (name.startsWith("-") || name.startsWith(".")) return false;
@@ -17,10 +21,11 @@ function isValidBranchName(name: string): boolean {
     return true;
 }
 
-export function branch(state: RepoState, name?: string): Result {
+export function branch(state: RepoState, cmd: { kind: "branch"; name?: string }): Result {
+    const name = cmd.name;
     const commitCount = Object.keys(state.commits || {}).length;
 
-    // 1. Trường hợp không có name hoặc name rỗng (Liệt kê branch):
+    // 1. Trường hợp không truyền name -> Liệt kê danh sách branch
     if (!name) {
         if (commitCount === 0) {
             return succeed(state, []);
@@ -35,30 +40,34 @@ export function branch(state: RepoState, name?: string): Result {
         return succeed(state, lines);
     }
 
-    // 2. Kiểm tra tính hợp lệ của tên branch
+    // 2. Kiểm tra nếu repo rỗng mà tạo branch mới -> Trả về lỗi NoCommitsYet
+    if (commitCount === 0) {
+        return fail(state, "NoCommitsYet", "fatal: No commits yet");
+    }
+
+    // 3. Kiểm tra tính hợp lệ của tên branch -> Trả về lỗi InvalidRefName
     if (!isValidBranchName(name)) {
         return fail(state, "InvalidRefName", `fatal: '${name}' is not a valid branch name`);
     }
 
-    // 3. Kiểm tra xem tên branch đã tồn tại chưa
+    // 4. Kiểm tra xem tên branch đã tồn tại chưa -> Trả về lỗi BranchAlreadyExists
     if (state.branches && state.branches[name] !== undefined) {
         return fail(state, "BranchAlreadyExists", `fatal: A branch named '${name}' already exists.`);
     }
 
-    // 4. Xác định commit hiện tại mà HEAD đang trỏ tới (nếu có commit)
-    let targetCommitId: string | undefined;
-    if (commitCount > 0) {
-        if (!state.head.detached && state.head.ref) {
-            targetCommitId = state.branches[state.head.ref];
-        } else if (state.head.detached && state.head.commit) {
-            targetCommitId = state.head.commit;
-        }
+    // 5. Xác định commit hiện tại mà HEAD đang trỏ tới để làm mốc cho branch mới
+    let targetCommitId = "";
+    if (!state.head.detached && state.head.ref) {
+        targetCommitId = state.branches[state.head.ref] || "";
+    } else if (state.head.detached && state.head.commit) {
+        targetCommitId = state.head.commit;
     }
 
-    // 5. Tạo branch mới (cho phép chạy trơn tru kể cả trên repo trống để qua bài test ALL_KINDS)
+    // 6. Tạo branch mới. 
+    // Quan trọng: git branch KHÔNG làm HEAD di chuyển, HEAD vẫn giữ nguyên vị trí cũ.
     const newBranches = {
         ...state.branches,
-        [name]: targetCommitId || "",
+        [name]: targetCommitId,
     };
 
     const updatedState: RepoState = {
