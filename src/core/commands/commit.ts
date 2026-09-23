@@ -2,35 +2,33 @@ import { succeed } from "../errors";
 import type { RepoState, Result, Commit } from "../types";
 
 export function commit(state: RepoState, message?: string): Result {
-    // 1. Dùng fallback an toàn từ đoạn 1 để tránh lỗi nếu state thiếu thuộc tính
+    const resolvedMessage = message ?? "";
     const commits = state.commits || {};
     const branches = state.branches || {};
-    const currentHead = state.head || { detached: false, ref: "main", commit: null };
+    
+    // Nếu repo hoàn toàn rỗng, tự động gán HEAD về nhánh "main"
+    const currentHead = state.head || { detached: false, ref: "main" };
+    let activeBranch = currentHead.ref || "main";
 
     let parents: string[] = [];
 
-    // 2. Xử lý parent commit chuẩn xác theo trạng thái HEAD
     if (!currentHead.detached) {
-        const activeBranch = currentHead.ref || "main";
+        // Nếu nhánh hiện tại đã có commit trước đó thì lấy làm parent
         if (branches[activeBranch]) {
             parents = [branches[activeBranch]];
         }
-    } else if (currentHead.commit) {
+    } else if (currentHead.detached && currentHead.commit) {
         parents = [currentHead.commit];
     }
 
     const commitCount = Object.keys(commits).length;
     const newCommitId = `c${commitCount + 1}`;
 
-    // 3. Tự động sinh message dạng C1, C2... nếu người dùng không truyền vào
-    const trimmed = message?.trim();
-    const resolvedMessage = trimmed && trimmed.length > 0 ? trimmed : `C${commitCount + 1}`;
-
     const newCommit: Commit = {
         id: newCommitId,
         message: resolvedMessage,
         parents: parents,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString(), // Lưu ý: Nếu test deep equal strict với thời gian, cần lưu ý phần này
     };
 
     const newCommits = {
@@ -39,18 +37,13 @@ export function commit(state: RepoState, message?: string): Result {
     };
 
     const newBranches = { ...branches };
-    let newHead = { ...currentHead };
-    let label: string = "";
+    const newHead = { ...currentHead, ref: activeBranch };
 
-    // 4. Cập nhật nhánh hoặc detached head đúng chuẩn
     if (!currentHead.detached) {
-        const activeBranch = currentHead.ref || "main";
+        // Cập nhật nhánh hiện tại (hoặc tự tạo "main" nếu repo đang rỗng) trỏ tới commit mới
         newBranches[activeBranch] = newCommitId;
-        newHead = { ...currentHead, ref: activeBranch };
-        label = activeBranch;
     } else {
-        newHead = { ...currentHead, commit: newCommitId };
-        label = "detached HEAD";
+        newHead.commit = newCommitId;
     }
 
     const updatedState: RepoState = {
@@ -60,6 +53,5 @@ export function commit(state: RepoState, message?: string): Result {
         head: newHead,
     };
 
-    // 5. Dùng đúng template string để hiển thị kết quả
-    return succeed(updatedState, [`[\({label}\){newCommitId}] ${resolvedMessage}`]);
+    return succeed(updatedState, [`[\({activeBranch}\){newCommitId}] ${resolvedMessage}`]);
 }
