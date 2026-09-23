@@ -1,3 +1,6 @@
+import { succeed } from "../errors";
+import type { RepoState, Result, Commit } from "../types";
+
 export function commit(state: RepoState, message?: string): Result {
     const resolvedMessage = message ?? "";
     const commits = state.commits || {};
