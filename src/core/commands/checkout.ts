@@ -1,8 +1,29 @@
-import { succeed } from "../errors";
+import { branch } from "./branch";
+import { errorText, fail, succeed } from "../errors";
 import type { RepoState, Result } from "../types";
 
-/** STUB ngày 1 — trả state không đổi, đúng kiểu, không throw. TODO(D1): triển khai thật. */
 export function checkout(state: RepoState, target: string, create: boolean): Result {
-  const via = create ? " (creating branch)" : "";
-  return succeed(state, [`[stub] would checkout: ${target}${via}`]);
+  if (create) {
+    const created = branch(state, target);
+    if (!created.ok) return created;
+    return succeed(
+      { ...created.state, head: { detached: false, ref: target, commit: null } },
+      [`Switched to a new branch '${target}'`],
+    );
+  }
+
+  if (Object.hasOwn(state.branches, target)) {
+    const id = state.branches[target]!;
+    if (!Object.hasOwn(state.commits, id)) return fail(state, "PathspecNotFound", target);
+    if (!state.head.detached && state.head.ref === target) {
+      return succeed(state, [errorText("AlreadyOnBranch", target)]);
+    }
+    return succeed({ ...state, head: { detached: false, ref: target, commit: null } },
+      [`Switched to branch '${target}'`]);
+  }
+  if (!Object.hasOwn(state.commits, target)) return fail(state, "PathspecNotFound", target);
+  return succeed(
+    { ...state, head: { detached: true, ref: null, commit: target } },
+    [`Note: switching to '${target}'.`, "You are in 'detached HEAD' state."],
+  );
 }
