@@ -1,0 +1,40 @@
+import { readFileSync } from "node:fs";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.resetModules();
+});
+
+describe("progress store", () => {
+  it("lưu vào localStorage rồi đọc lại sau khi tạo store mới", async () => {
+    const data = new Map<string, string>();
+    const storage = {
+      getItem: vi.fn((key: string) => data.get(key) ?? null),
+      setItem: vi.fn((key: string, value: string) => { data.set(key, value); }),
+    };
+    const fetchSpy = vi.fn(() => { throw new Error("unexpected network call"); });
+    vi.stubGlobal("localStorage", storage);
+    vi.stubGlobal("fetch", fetchSpy);
+
+    const record = { levelId: "01", completedAt: "2026-09-01T00:00:00Z", commandCount: 4 };
+    const { progressStore: first } = await import("./store");
+    await first.load();
+    first.complete(record);
+    expect(storage.setItem).toHaveBeenCalledOnce();
+
+    vi.resetModules();
+    const { progressStore: reloaded } = await import("./store");
+    await reloaded.load();
+    expect(reloaded.getAll()).toEqual({ "01": record });
+    expect(reloaded.isComplete("01")).toBe(true);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("progress không import sync", () => {
+    for (const file of ["store.ts", "merge.ts"]) {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8");
+      expect(source).not.toMatch(/\bfrom\s*["'][^"']*\/sync(?:\/|["'])/);
+    }
+  });
+});
