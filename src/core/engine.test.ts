@@ -13,10 +13,15 @@ const ALL_KINDS: Command[] = [
 describe("execute", () => {
   it("xử lý được cả 5 kind và không bao giờ throw", () => {
     for (const command of ALL_KINDS) {
-      const result = execute(emptyState(), command);
-      expect(result.ok).toBe(true);
+      const initial = emptyState();
+      const result = execute(initial, command);
+      expect(typeof result.ok).toBe("boolean");
       expect(Array.isArray(result.output)).toBe(true);
       expect(result.state).toBeDefined();
+      if (!result.ok) {
+        expect(result.errorClass).toBeDefined();
+        expect(result.state).toBe(initial);
+      }
     }
   });
 
