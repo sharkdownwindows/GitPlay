@@ -4,7 +4,7 @@ Công cụ học Git bằng trực quan hóa: gõ lệnh Git thật, xem DAG com
 
 Điểm khác biệt của dự án không nằm ở giao diện mà ở **differential testing** — engine được so sánh tự động với `git` thật trên hàng nghìn chuỗi lệnh sinh tự động, và kết quả được publish ngay trong app ở tab Verification.
 
-> **Trạng thái: M1 (scaffold).** Ba contract đã đóng băng, engine còn là stub — mỗi lệnh trả state không đổi. Xem [Trạng thái hiện tại](#trạng-thái-hiện-tại).
+> **Trạng thái: M1 complete, M2 in progress.** Ba contract đã có trong source; vertical slice của M2 chưa hoàn thành. Xem [Trạng thái hiện tại](#trạng-thái-hiện-tại) và `docs/STATUS.md`.
 
 ---
 
@@ -169,16 +169,7 @@ Mỗi thư mục có **đúng một chủ**. Nếu hai người cùng sửa mộ
 
 ## Trạng thái hiện tại
 
-Xong (M1):
-
-- Scaffold Vite + TS + Tailwind 4 + Vitest; `npm run dev` lên được
-- Toàn bộ dependency, kể cả Tier 2 — không ai phải sửa `package.json` sau ngày 1
-- Ba contract
-- Engine stub: 5 lệnh, đúng kiểu, không throw
-- App shell 4 tab · `MiniGraph` stub · `verification.json` giả
-- CI: typecheck + test + lint:imports + tier1-build
-
-Chưa có: engine thật, layout DAG, parser terminal, nội dung 12 level, harness diff-test, Tier 2 server. Mọi file trong các thư mục đó hiện là stub rỗng.
+**M1 complete; M2 in progress.** Scaffold, ba contract, app shell, engine stub, `MiniGraph` stub, report mẫu và CI workflow đã có. Parser, layout DAG và level checker đã được triển khai trên branch M2, nhưng terminal/graph view và engine thật chưa nối thành vertical slice. Các level còn thiếu nội dung; harness diff-test và Tier 2 server vẫn là stub. Bằng chứng và validation mới nhất được ghi tại `docs/STATUS.md`.
 
 ---
 
