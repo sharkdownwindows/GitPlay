@@ -162,9 +162,9 @@ export function layout(state: RepoState): Layout {
     const depth = depthMemo.get(id)!;
     const lane = nodeLane.get(id)!;
 
-    // Y đảo ngược để commit mới nhất (depth cao hơn) có Y nhỏ hơn (nằm bên trên)
+    // Root ở trên; mỗi child nằm dưới parent theo độ sâu topo.
     const x = lane * GRID_SPACING + PADDING;
-    const y = (maxDepth - depth) * GRID_SPACING + PADDING;
+    const y = depth * GRID_SPACING + PADDING;
 
     nodes.push({ id, x, y });
   }

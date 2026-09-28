@@ -82,18 +82,45 @@ export interface VerificationReport {
   divergences: Divergence[];
 }
 
-/** Type guard tối thiểu — tab phải chịu được file thiếu/cũ mà không trắng màn. */
+/** Reject incomplete reports before the tab reads their fields. */
 export function isVerificationReport(value: unknown): value is VerificationReport {
-  if (typeof value !== "object" || value === null) return false;
-  const r = value as Partial<VerificationReport>;
+  const isRecord = (item: unknown): item is Record<string, unknown> =>
+    typeof item === "object" && item !== null && !Array.isArray(item);
+  const hasNumbers = (item: Record<string, unknown>, keys: string[]): boolean =>
+    keys.every((key) => typeof item[key] === "number" && Number.isFinite(item[key]));
+
+  if (!isRecord(value)) return false;
+  const r = value;
+  if (!isRecord(r.diffTest) || !isRecord(r.coverage)) return false;
+
   return (
     r.schemaVersion === SCHEMA_VERSION &&
     typeof r.generatedAt === "string" &&
     typeof r.commitSha === "string" &&
     typeof r.gitVersion === "string" &&
-    typeof r.diffTest === "object" &&
-    r.diffTest !== null &&
+    typeof r.nodeVersion === "string" &&
+    hasNumbers(r.diffTest, [
+      "totalCases", "passed", "failed", "warnings", "exhaustiveDepth",
+      "randomCases", "seed", "durationMs",
+    ]) &&
+    hasNumbers(r.coverage, ["commit", "branch", "switch", "checkout", "merge"]) &&
     Array.isArray(r.scaling) &&
+    r.scaling.every((series: unknown) =>
+      isRecord(series) && typeof series.label === "string" &&
+      Array.isArray(series.points) && series.points.every((point: unknown) =>
+        isRecord(point) && hasNumbers(point, ["n", "medianMs", "p95Ms", "iterations"])
+      )
+    ) &&
     Array.isArray(r.divergences)
+    && r.divergences.every((divergence: unknown) =>
+      isRecord(divergence) &&
+      typeof divergence.id === "string" &&
+      ["state", "errorClass", "output"].includes(String(divergence.kind)) &&
+      ["hard", "soft"].includes(String(divergence.severity)) &&
+      Array.isArray(divergence.commands) &&
+      divergence.commands.every((command: unknown) => typeof command === "string") &&
+      typeof divergence.expected === "string" &&
+      typeof divergence.actual === "string"
+    )
   );
 }

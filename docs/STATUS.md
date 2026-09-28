@@ -27,6 +27,16 @@ Cập nhật: 2026-09-28, branch `m2-stabilize`. Trạng thái này dựa trên 
 
 Không chạy `npm run check:tier1` trong working repository vì script xóa thư mục Tier 2.
 
+## Spike #23 — thời gian gọi Git (2026-09-28)
+
+Chạy `node scripts/bench-git-spawn.mjs`: tạo một repo Git trong thư mục tạm, đo 100 lần `spawnSync("git", ["status", "--porcelain"])` bằng đồng hồ monotonic, rồi xóa thư mục tạm trong `finally`. Đã xác nhận thư mục không còn sau benchmark. Không warm-up; số đo gồm chi phí spawn **và** thực thi `git status`, không phải chi phí spawn thuần.
+
+| Số lần | Mean | Median | p95 |
+|---:|---:|---:|---:|
+| 100 | 29.21 ms | 29.22 ms | 31.60 ms |
+
+Môi trường: Node `v24.16.0`; Git `2.31.1.windows.1`; Windows `win32 10.0.26200 x64`. Đây là một lần đo local; ngân sách CI và số process Git cho mỗi test case cần được đo trên CI trước khi quyết định chạy vét cạn độ sâu 3 trên mọi PR.
+
 ## Blocker và việc tiếp theo
 
 - M2 còn thiếu engine thật, terminal/graph view nối hoàn chỉnh và kiểm chứng vertical slice theo `ISSUES.md` §M2.

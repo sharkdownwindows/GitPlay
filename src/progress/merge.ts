@@ -21,8 +21,10 @@ export function merge(local: ProgressSet, remote: ProgressSet): ProgressSet {
 }
 
 function better(a: LevelRecord, b: LevelRecord): LevelRecord {
-  if (a.completedAt !== b.completedAt) {
-    return a.completedAt < b.completedAt ? a : b;
+  const aTime = Date.parse(a.completedAt);
+  const bTime = Date.parse(b.completedAt);
+  if (aTime !== bTime) {
+    return aTime < bTime ? a : b;
   }
   return a.commandCount <= b.commandCount ? a : b;
 }

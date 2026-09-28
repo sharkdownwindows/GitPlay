@@ -16,4 +16,9 @@ describe("public/verification.json", () => {
     );
     expect(fixture.scaling[0]?.points).toHaveLength(4);
   });
+
+  it("rejects an incomplete report even when the schema version matches", () => {
+    const { coverage: _coverage, ...incomplete } = fixture;
+    expect(isVerificationReport(incomplete)).toBe(false);
+  });
 });
