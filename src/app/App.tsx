@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Practice } from "./Practice";
 
 /**
  * SHELL — ĐÓNG BĂNG NGÀY 1.
@@ -54,10 +55,16 @@ export function App() {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-10" role="tabpanel">
-        <h1 className="text-lg font-medium">{current.label}</h1>
-        <p className="mt-2 text-sm text-neutral-500">
-          Tab trống — chờ {current.owner}.
-        </p>
+        {current.id === "practice" ? (
+          <Practice />
+        ) : (
+          <>
+            <h1 className="text-lg font-medium">{current.label}</h1>
+            <p className="mt-2 text-sm text-neutral-500">
+              Tab trống — chờ {current.owner}.
+            </p>
+          </>
+        )}
       </main>
     </div>
   );
