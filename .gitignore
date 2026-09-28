@@ -5,9 +5,6 @@ node_modules/
 dist/
 *.tsbuildinfo
 
-# docs
-docs/
-
 # test / harness artifacts
 coverage/
 harness/tmp/
