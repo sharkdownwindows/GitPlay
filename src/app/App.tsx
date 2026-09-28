@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Practice } from "./Practice";
+import { VerificationTab } from "../verification/VerificationTab";
 
 /**
  * SHELL — ĐÓNG BĂNG NGÀY 1.
@@ -57,6 +58,8 @@ export function App() {
       <main className="mx-auto max-w-5xl px-6 py-10" role="tabpanel">
         {current.id === "practice" ? (
           <Practice />
+        ) : current.id === "verification" ? (
+          <VerificationTab />
         ) : (
           <>
             <h1 className="text-lg font-medium">{current.label}</h1>
