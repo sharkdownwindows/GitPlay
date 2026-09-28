@@ -1,14 +1,45 @@
-import { succeed } from "../errors";
+import { branch } from "./branch";
+import { errorText, fail, succeed } from "../errors";
 import type { RepoState, Result } from "../types";
 
-/** STUB ngày 1 — trả state không đổi, đúng kiểu, không throw. TODO(D1): triển khai thật. */
 export function switchTo(
   state: RepoState,
   target: string,
   detach: boolean,
   create: boolean,
 ): Result {
-  const how = detach ? " (detached)" : "";
-  const via = create ? " (creating branch)" : "";
-  return succeed(state, [`[stub] would switch to: ${target}${how}${via}`]);
+  if (create) {
+    if (detach) return fail(state, "UnknownCommand");
+    const created = branch(state, target);
+    if (!created.ok) return created;
+    return succeed(
+      { ...created.state, head: { detached: false, ref: target, commit: null } },
+      [`Switched to a new branch '${target}'`],
+    );
+  }
+
+  const branchCommit = Object.hasOwn(state.branches, target) ? state.branches[target] : undefined;
+  if (branchCommit !== undefined && !Object.hasOwn(state.commits, branchCommit)) {
+    return fail(state, "PathspecNotFound", target);
+  }
+  if (detach) {
+    const id = branchCommit ?? (Object.hasOwn(state.commits, target) ? target : null);
+    if (id === null) return fail(state, "PathspecNotFound", target);
+    return succeed({ ...state, head: { detached: true, ref: null, commit: id } },
+      [`HEAD is now at ${id}`]);
+  }
+  if (branchCommit !== undefined) {
+    if (!state.head.detached && state.head.ref === target) {
+      return succeed(state, [errorText("AlreadyOnBranch", target)]);
+    }
+    return succeed({ ...state, head: { detached: false, ref: target, commit: null } },
+      [`Switched to branch '${target}'`]);
+  }
+  if (Object.hasOwn(state.commits, target)) {
+    return {
+      ...fail(state, "PathspecNotFound", target),
+      output: [`fatal: a branch is expected, got commit '${target}'`],
+    };
+  }
+  return fail(state, "PathspecNotFound", target);
 }

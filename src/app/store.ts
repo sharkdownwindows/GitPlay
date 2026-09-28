@@ -1,5 +1,6 @@
 import { useCallback, useReducer } from "react";
 import { execute } from "../core/engine";
+import { initialHistory, recordResult, redo, undo, type HistoryState } from "../core/history";
 import { emptyState, type Command, type RepoState } from "../core/types";
 
 /**
@@ -9,11 +10,8 @@ import { emptyState, type Command, type RepoState } from "../core/types";
  *
  * Các module UI KHÔNG import lẫn nhau — chúng gặp nhau ở đây.
  */
-export interface AppState {
-  repo: RepoState;
+export interface AppState extends HistoryState {
   output: string[];
-  past: RepoState[];
-  future: RepoState[];
 }
 
 export type Action =
@@ -23,43 +21,25 @@ export type Action =
   | { type: "reset"; state?: RepoState };
 
 export function initialAppState(repo: RepoState = emptyState()): AppState {
-  return { repo, output: [], past: [], future: [] };
+  return { ...initialHistory(repo), output: [] };
 }
 
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case "run": {
       const result = execute(state.repo, action.command);
-      if (!result.ok) {
-        // Lỗi không tạo bước undo — Git thật cũng không có gì để hoàn tác.
-        return { ...state, output: [...state.output, ...result.output] };
-      }
       return {
-        repo: result.state,
+        ...recordResult(state, result),
         output: [...state.output, ...result.output],
-        past: [...state.past, state.repo],
-        future: [],
       };
     }
     case "undo": {
-      const previous = state.past.at(-1);
-      if (!previous) return state;
-      return {
-        ...state,
-        repo: previous,
-        past: state.past.slice(0, -1),
-        future: [state.repo, ...state.future],
-      };
+      const history = undo(state);
+      return history === state ? state : { ...state, ...history };
     }
     case "redo": {
-      const next = state.future[0];
-      if (!next) return state;
-      return {
-        ...state,
-        repo: next,
-        past: [...state.past, state.repo],
-        future: state.future.slice(1),
-      };
+      const history = redo(state);
+      return history === state ? state : { ...state, ...history };
     }
     case "reset":
       return initialAppState(action.state);
