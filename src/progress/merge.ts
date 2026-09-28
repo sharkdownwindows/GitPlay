@@ -1,26 +1,32 @@
 import type { LevelRecord, ProgressSet } from "./types";
 
 /**
- * Union hai ProgressSet. Hàm THUẦN — không I/O, không thời gian, không random.
+ * Phép hợp hai ProgressSet (local và server).
+ * Hàm THUẦN — không I/O, không truy cập thời gian hệ thống, không random.
  *
- * Luật giải xung đột khi cùng levelId có ở cả hai bên:
- *   1. Giữ bản hoàn thành SỚM hơn (completedAt nhỏ hơn) — thành tích đã đạt
- *      thì không mất đi vì đăng nhập ở máy khác.
- *   2. Bằng nhau về thời gian → giữ commandCount nhỏ hơn (lời giải tốt hơn).
+ * Lập luận giải quyết xung đột (Q&A: "Tại sao không cần cơ chế xử lý xung đột phức tạp?"):
+ * 1. Tiến độ là dữ liệu CHỈ TĂNG (monotonically increasing data).
+ * 2. Không bao giờ có thao tác "bỏ hoàn thành" (un-complete a level).
+ * 3. Do đó không tồn tại xung đột dữ liệu thực sự giữa hai thiết bị hay client/server.
  *
- * Union chứ không phải "bên nào thắng": không bao giờ xóa tiến độ, kể cả khi
- * server trả về tập rỗng vì tài khoản mới.
+ * Quy tắc giải quyết khi trùng `levelId`:
+ * 1. Giữ bản có `completedAt` SỚM HƠN (lần hoàn thành đầu tiên mới là thành tích thật,
+ *    thành tích đã đạt không bị mất đi khi người dùng đăng nhập ở máy khác).
+ * 2. Trường hợp bằng nhau về `completedAt` → giữ bản có `commandCount` nhỏ hơn (lời giải tối ưu hơn).
  */
-export function merge(local: ProgressSet, remote: ProgressSet): ProgressSet {
+export function mergeProgress(local: ProgressSet, server: ProgressSet): ProgressSet {
   const out: ProgressSet = { ...local };
-  for (const [levelId, incoming] of Object.entries(remote)) {
+  for (const [levelId, incoming] of Object.entries(server)) {
     const current = out[levelId];
-    out[levelId] = current ? better(current, incoming) : incoming;
+    out[levelId] = current ? pickBetterRecord(current, incoming) : incoming;
   }
   return out;
 }
 
-function better(a: LevelRecord, b: LevelRecord): LevelRecord {
+/** Alias cho mergeProgress để giữ tương thích ngược */
+export const merge = mergeProgress;
+
+function pickBetterRecord(a: LevelRecord, b: LevelRecord): LevelRecord {
   if (a.completedAt !== b.completedAt) {
     return a.completedAt < b.completedAt ? a : b;
   }
