@@ -1,0 +1,131 @@
+import { spawn, execFileSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import os from "node:os";
+import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
+import { createServer } from "vite";
+import type { BrowserMeasurement, BrowserPoint } from "./browserMetrics";
+import { classifySaturation, percentile } from "./browserMetrics";
+
+const chrome = process.env.GITSCOPE_BROWSER ?? (process.platform === "win32"
+  ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" : "google-chrome");
+const profile = mkdtempSync(path.join(tmpdir(), "gitscope-browser-"));
+const server = await createServer({ server: { host: "127.0.0.1", port: 0 } });
+let processHandle: ReturnType<typeof spawn> | undefined;
+
+async function waitForPort(): Promise<number> {
+  const file = path.join(profile, "DevToolsActivePort");
+  for (let i = 0; i < 100; i++) {
+    if (existsSync(file)) return Number(readFileSync(file, "utf8").split("\n")[0]);
+    await delay(100);
+  }
+  throw new Error("Chrome did not open its debugging port");
+}
+
+async function connect(url: string) {
+  const ws = new WebSocket(url);
+  await new Promise<void>((resolve, reject) => {
+    ws.addEventListener("open", () => resolve(), { once: true });
+    ws.addEventListener("error", () => reject(new Error("CDP WebSocket failed")), { once: true });
+  });
+  let nextId = 0;
+  const pending = new Map<number, (value: any) => void>();
+  ws.addEventListener("message", (event) => {
+    const message = JSON.parse(String(event.data));
+    if (message.id && pending.has(message.id)) {
+      pending.get(message.id)!(message);
+      pending.delete(message.id);
+    }
+  });
+  return {
+    call(method: string, params: Record<string, unknown> = {}): Promise<any> {
+      const id = ++nextId;
+      return new Promise((resolve) => {
+        pending.set(id, resolve);
+        ws.send(JSON.stringify({ id, method, params }));
+      });
+    },
+    close: () => ws.close(),
+  };
+}
+
+async function measure(port: number, url: string, kind: "render" | "frame", n: number,
+  timeoutMs: number): Promise<{ point: BrowserPoint; layout: BrowserPoint }> {
+  const target = await fetch(`http://127.0.0.1:${port}/json/new?${encodeURIComponent(url)}`, { method: "PUT" });
+  if (!target.ok) throw new Error(`Cannot create Chrome tab: ${target.status}`);
+  const tab = await target.json() as { webSocketDebuggerUrl: string; id: string };
+  const cdp = await connect(tab.webSocketDebuggerUrl);
+  try {
+    const started = Date.now();
+    while (Date.now() - started < timeoutMs) {
+      const response = await cdp.call("Runtime.evaluate", {
+        expression: "document.body?.dataset.result ?? ''", returnByValue: true,
+      });
+      const value = response.result?.result?.value;
+      if (value) {
+        const result = JSON.parse(value) as { ok: boolean; error?: string;
+          render?: number[]; frame?: number[]; layout: number[] };
+        if (!result.ok) throw new Error(result.error);
+        return {
+          point: { n, status: "ok", samplesMs: result[kind] ?? [] },
+          layout: { n, status: "ok", samplesMs: result.layout },
+        };
+      }
+      await delay(100);
+    }
+    return { point: { n, status: "timeout", samplesMs: [] },
+      layout: { n, status: "timeout", samplesMs: [] } };
+  } finally {
+    cdp.close();
+    await fetch(`http://127.0.0.1:${port}/json/close/${tab.id}`).catch(() => {});
+  }
+}
+
+try {
+  await server.listen();
+  const base = server.resolvedUrls!.local[0]!;
+  processHandle = spawn(chrome, ["--headless=new", "--no-first-run", "--no-default-browser-check",
+    "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--window-size=1280,800",
+    "--force-device-scale-factor=1", "--remote-allow-origins=*", "about:blank"],
+  { stdio: "ignore", windowsHide: true });
+  const port = await waitForPort();
+  const browserInfo = await fetch(`http://127.0.0.1:${port}/json/version`).then((r) => r.json()) as { Browser: string };
+  const commitSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  const result: BrowserMeasurement = {
+    commitSha, generatedAt: new Date().toISOString(), browser: browserInfo.Browser,
+    os: `${os.platform()} ${os.release()} ${os.arch()}`,
+    nodeVersion: process.version,
+    gitVersion: execFileSync("git", ["--version"], { encoding: "utf8" }).trim(),
+    seed: 42, warmups: { render: 1, frame: 2 }, renderIterations: 5,
+    animationRuns: 10, viewport: "1280x800@1x", mode: "headless",
+    render: [], frame: [], layout: [],
+  };
+  for (const n of [100, 1_000, 10_000]) {
+    const url = `${base}harness/bench/browser.html?mode=render&n=${n}`;
+    const measured = await measure(port, url, "render", n, 30_000);
+    result.render.push(measured.point);
+    result.layout.push(measured.layout);
+    console.log(`SVG render n=${n}: ${measured.point.status}${measured.point.samplesMs.length
+      ? ` median=${percentile(measured.point.samplesMs, 0.5).toFixed(2)} p95=${percentile(measured.point.samplesMs, 0.95).toFixed(2)} ms` : ""}`);
+  }
+  const frame = await measure(port, `${base}harness/bench/browser.html?mode=frame&n=200`, "frame", 200, 30_000);
+  result.frame.push(frame.point);
+  result.layout.push(frame.layout);
+  console.log(`Animation frames n=200: ${frame.point.status}${frame.point.samplesMs.length
+    ? ` p95=${percentile(frame.point.samplesMs, 0.95).toFixed(2)} ms, ${frame.point.samplesMs.length} frames` : ""}`);
+  console.log(`Frame budget exceeded: ${classifySaturation(frame.point, 16.7)}`);
+  writeFileSync("harness/bench/browser-results.json", `${JSON.stringify(result, null, 2)}\n`);
+} finally {
+  processHandle?.kill();
+  await server.close();
+  await delay(1000);
+  const resolved = realpathSync(profile);
+  const tempRoot = realpathSync(tmpdir()) + path.sep;
+  if (!resolved.startsWith(tempRoot)) throw new Error("Browser profile escaped temp directory");
+  try {
+    rmSync(resolved, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
+  } catch (error) {
+    console.warn(`Could not remove temporary Chrome profile: ${String(error)}`);
+  }
+}

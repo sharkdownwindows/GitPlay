@@ -18,6 +18,9 @@ describe("verification report generator", () => {
     expect(report.coverage).toEqual(diff.coverage);
     expect(Object.values(report.coverage).every((cases) => cases <= report.diffTest.totalCases)).toBe(true);
     expect(report.scaling).toEqual([scaling]);
+    expect(makeVerificationReport(diff, scaling, [{ label: "SVG render", points: [
+      { n: 100, medianMs: 30, p95Ms: 40, iterations: 5 },
+    ] }]).scaling.map((series) => series.label)).toEqual(["layout()", "SVG render"]);
     expect(new Date(report.generatedAt).toISOString()).toBe(report.generatedAt);
     expect(() => validateGeneratedReport(report)).not.toThrow();
     expect(() => validateGeneratedReport({ ...report, commitSha: "0".repeat(40) })).toThrow();
