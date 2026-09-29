@@ -26,7 +26,7 @@ class ProgressStore {
   }
 
   isComplete(levelId: string): boolean {
-    return levelId in this.progress;
+    return Object.hasOwn(this.progress, levelId);
   }
 
   /** Ghi nhận hoàn thành level. Giữ lần giải tốt hơn nếu đã có. */
@@ -62,7 +62,19 @@ class ProgressStore {
 function readStorage(): ProgressSet {
   try {
     const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as ProgressSet) : {};
+    if (!raw) return {};
+    const value: unknown = JSON.parse(raw);
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+    for (const [levelId, record] of Object.entries(value)) {
+      if (typeof record !== "object" || record === null || Array.isArray(record)) return {};
+      const item = record as Record<string, unknown>;
+      if (!levelId.trim() || Object.keys(item).sort().join(",") !== "commandCount,completedAt,levelId" ||
+          item.levelId !== levelId || typeof item.completedAt !== "string" ||
+          !Number.isFinite(Date.parse(item.completedAt)) ||
+          !/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(item.completedAt) ||
+          !Number.isInteger(item.commandCount) || (item.commandCount as number) <= 0) return {};
+    }
+    return value as ProgressSet;
   } catch {
     return {};
   }

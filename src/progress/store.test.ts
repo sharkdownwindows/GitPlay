@@ -37,4 +37,13 @@ describe("progress store", () => {
       expect(source).not.toMatch(/\bfrom\s*["'][^"']*\/sync(?:\/|["'])/);
     }
   });
+
+  it.each(["not JSON", "[]", "null", '{"01":{"levelId":"02","completedAt":"bad","commandCount":-1}}'])
+    ("falls back safely for corrupt storage: %s", async (raw) => {
+      vi.stubGlobal("localStorage", { getItem: () => raw, setItem: vi.fn() });
+      const { progressStore } = await import("./store");
+      await progressStore.load();
+      expect(progressStore.getAll()).toEqual({});
+      expect(progressStore.isComplete("toString")).toBe(false);
+    });
 });
