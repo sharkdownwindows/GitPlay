@@ -1,9 +1,57 @@
-import { writeFileSync } from "node:fs";
+import { renameSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import type { ScalingSeries, VerificationReport } from "../src/verification/report";
-import { SCHEMA_VERSION } from "../src/verification/report";
+import { SCHEMA_VERSION, isVerificationReport } from "../src/verification/report";
 import { benchmarkLayout } from "./bench/layout";
 import { formatDivergenceLog, runDifferential, type DifferentialResult } from "./diff/run";
+import { runEngine } from "./diff/adapter";
+import { generateInvalidSequences, generateRandomSequences, generateValidSequences } from "./diff/generate";
+import { runReal } from "./diff/runReal";
+
+const SEED = 42;
+
+export function combineValidResults(exhaustive: DifferentialResult, random: DifferentialResult): DifferentialResult {
+  const seen = new Set<string>();
+  const divergences = [...exhaustive.divergences, ...random.divergences].filter((item) => {
+    const key = JSON.stringify([item.kind, item.commands]);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).map((item, index) => ({ ...item, id: `d${index + 1}` }));
+  const coverage = { ...exhaustive.coverage };
+  for (const kind of Object.keys(coverage) as (keyof typeof coverage)[]) coverage[kind] += random.coverage[kind];
+  const summary = {
+    totalCases: exhaustive.summary.totalCases + random.summary.totalCases,
+    passed: exhaustive.summary.passed + random.summary.passed,
+    failed: exhaustive.summary.failed + random.summary.failed,
+    warnings: exhaustive.summary.warnings + random.summary.warnings,
+    exhaustiveDepth: exhaustive.summary.exhaustiveDepth,
+    randomCases: random.summary.totalCases,
+    seed: random.summary.seed,
+    durationMs: exhaustive.summary.durationMs + random.summary.durationMs,
+  };
+  return { ...exhaustive, summary, sequences: summary.totalCases, coverage, divergences };
+}
+
+export function validateGeneratedReport(report: VerificationReport): void {
+  const layoutPoints = report.scaling.find((series) => series.label === "layout()")?.points;
+  if (!isVerificationReport(report) || !/^[0-9a-f]{40}$/.test(report.commitSha) ||
+      /^0{40}$/.test(report.commitSha) || new Date(report.generatedAt).toISOString() !== report.generatedAt ||
+      !/^git version \d+\.\d+/.test(report.gitVersion) || !/^v\d+\.\d+/.test(report.nodeVersion) ||
+      report.diffTest.totalCases !== report.diffTest.passed + report.diffTest.failed ||
+      report.diffTest.randomCases > report.diffTest.totalCases ||
+      layoutPoints?.map((point) => point.n).join(",") !== "100,1000,10000,100000" ||
+      report.scaling.some((series) => series.points.some((point) =>
+        point.n <= 0 || point.medianMs <= 0 || point.p95Ms <= 0 || point.iterations <= 0))) {
+    throw new Error("Invalid generated verification report");
+  }
+}
+
+function writeAtomically(path: string, content: string): void {
+  const temporary = `${path}.${process.pid}.tmp`;
+  writeFileSync(temporary, content);
+  renameSync(temporary, path);
+}
 
 export function makeVerificationReport(diff: DifferentialResult, scaling: ScalingSeries): VerificationReport {
   return {
@@ -20,10 +68,27 @@ export function makeVerificationReport(diff: DifferentialResult, scaling: Scalin
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const diff = runDifferential(2);
+  const full = process.argv.includes("--full");
+  const depth = full ? 3 : 2;
+  const randomCount = full ? 5_000 : 0;
+  const exhaustive = runDifferential(depth, runEngine, runReal, generateValidSequences(depth));
+  const random = runDifferential(0, runEngine, runReal,
+    generateRandomSequences(randomCount, SEED), randomCount, SEED);
+  const invalid = runDifferential(0, runEngine, runReal, generateInvalidSequences());
+  if (invalid.summary.failed > 0) {
+    for (const divergence of invalid.divergences.filter((item) => item.severity === "hard")) {
+      console.error(JSON.stringify(divergence));
+    }
+    throw new Error(`${invalid.summary.failed} invalid-command hard failures`);
+  }
+  const diff = combineValidResults(exhaustive, random);
   const report = makeVerificationReport(diff, benchmarkLayout());
-  writeFileSync("public/verification.json", `${JSON.stringify(report, null, 2)}\n`);
-  writeFileSync("docs/divergences.md", formatDivergenceLog(diff));
-  console.log(`Report: ${report.commitSha}; ${report.diffTest.totalCases} depth-2 cases; ${report.diffTest.failed} hard failures; ${report.diffTest.warnings} output warnings`);
-  if (report.diffTest.failed > 0) process.exitCode = 1;
+  validateGeneratedReport(report);
+  writeAtomically("public/verification.json", `${JSON.stringify(report, null, 2)}\n`);
+  writeAtomically("docs/divergences.md", formatDivergenceLog(diff));
+  console.log(`Exhaustive depth ${depth}: ${exhaustive.summary.passed}/${exhaustive.summary.totalCases}, ${exhaustive.summary.durationMs.toFixed(0)} ms`);
+  console.log(`Random seed ${SEED}, max depth 20: ${random.summary.passed}/${random.summary.totalCases}, ${random.summary.durationMs.toFixed(0)} ms`);
+  console.log(`Invalid transitions: ${invalid.summary.passed}/${invalid.summary.totalCases}, ${invalid.summary.durationMs.toFixed(0)} ms`);
+  if (exhaustive.summary.failed > 0 || random.summary.passed / Math.max(1, randomCount) < (full ? 0.999 : 0) ||
+      invalid.summary.failed > 0) process.exitCode = 1;
 }

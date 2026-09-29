@@ -3,6 +3,7 @@ import { formatDivergenceLog, gitErrorClass, runDifferential } from "./run";
 import { runEngine } from "./adapter";
 import { runReal } from "./runReal";
 import { normalizeEngine, normalizeReal } from "./normalize";
+import { generateInvalidSequences } from "./generate";
 
 describe("differential runner", () => {
   it("classifies an unborn branch creation failure", () => {
@@ -16,6 +17,18 @@ describe("differential runner", () => {
     });
     expect(result.summary.failed).toBe(1);
     expect(result.divergences.some((divergence) => divergence.severity === "hard")).toBe(true);
+  });
+
+  it("fails the invalid-command hard gate for an injected ErrorClass defect", () => {
+    const testCase = generateInvalidSequences().find((item) => item.fixture === "empty" &&
+      item.suffix[0]?.kind === "branch" && item.suffix[0].name === "feature")!;
+    const result = runDifferential(0, (commands) => {
+      const run = runEngine(commands);
+      run.steps[0] = { ...run.steps[0]!, result: { ...run.steps[0]!.result, errorClass: "PathspecNotFound" } };
+      return run;
+    }, runReal, [testCase]);
+    expect(result.summary.failed).toBe(1);
+    expect(result.divergences.some((item) => item.kind === "errorClass" && item.severity === "hard")).toBe(true);
   });
 
   it("detects a corrupt intermediate step even if the final state is restored", () => {
