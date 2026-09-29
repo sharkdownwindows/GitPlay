@@ -46,14 +46,14 @@ export function nextCommand(session: TerminalSession): TerminalSession {
 
 export function submitInput(
   session: TerminalSession,
-  onCommand: (command: Command) => void,
+  onCommand: (command: Command) => boolean | void,
 ): TerminalSession {
   const command = session.input.trim();
   if (command === "") return session;
 
   const parsed = parse(command);
   const error = "ok" in parsed ? parsed.output : [];
-  if (!("ok" in parsed)) onCommand(parsed);
+  if (!("ok" in parsed) && onCommand(parsed) === false) return session;
 
   return {
     input: "",

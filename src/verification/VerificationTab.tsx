@@ -46,11 +46,6 @@ export function VerificationContent({ report }: { report: VerificationReport | n
   return (
     <section className="space-y-5">
       <h1 className="text-lg font-semibold">Verification</h1>
-      {/^0{40}$/.test(report.commitSha) && (
-        <p className="rounded border border-amber-800 px-3 py-2 text-sm text-amber-300">
-          Sample report — these values are placeholders.
-        </p>
-      )}
       <dl className="grid gap-2 text-sm sm:grid-cols-2">
         <div><dt className="text-neutral-400">Commit SHA</dt><dd className="break-all font-mono">{report.commitSha}</dd></div>
         <div><dt className="text-neutral-400">Generated</dt><dd>{report.generatedAt}</dd></div>

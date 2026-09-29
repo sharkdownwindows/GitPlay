@@ -67,11 +67,33 @@ describe("differential runner", () => {
     expect(normalizeEngine(engine.state)).toEqual(normalizeReal(git.state));
   });
 
-  it("records every observed divergence and keeps an entry template", () => {
+  it("records run metadata, hard details and grouped soft warnings", () => {
     const result = runDifferential(0, runEngine);
+    result.divergences = [
+      { id: "hard-1", kind: "state", severity: "hard", commands: ["git commit -m root"], expected: "main=c1", actual: "main=c2" },
+      { id: "soft-1", kind: "output", severity: "soft", commands: ["git branch feature"], expected: "Git A", actual: "Scope A" },
+      { id: "soft-2", kind: "output", severity: "soft", commands: ["git branch topic"], expected: "Git B", actual: "Scope B" },
+    ];
+    result.summary.failed = 1;
+    result.summary.warnings = 2;
     const log = formatDivergenceLog(result);
-    expect(log).toContain("Command sequence:");
+    expect(log).toContain(`Commit SHA: ${result.commitSha}`);
+    expect(log).toContain(`Git version: ${result.gitVersion}`);
+    expect(log).toContain("Seed: 0");
+    expect(log).toContain("Exhaustive depth: 0");
+    expect(log).toContain("Cases: 2");
+    expect(log).toContain("Hard failures: 1");
+    expect(log).toContain("Output warnings: 2");
+    expect(log).toContain("Alphabet size: 15");
+    expect(log).toContain("Fixtures: empty (setup 0), fork (setup 5)");
+    expect(log).toContain("Minimal command sequence:");
     expect(log).toContain("Expected (Git):");
-    expect(log).toContain("Fixing commit:");
+    expect(log).toContain("Actual (GitScope):");
+    expect(log).toContain("Root-cause status: Pending investigation.");
+    expect(log).toContain("Fixing commit: Pending.");
+    expect(log).toContain("### branch (2 warnings)");
+    expect(log.match(/### branch \(/g)).toHaveLength(1);
+    expect(log).not.toContain("### soft-1");
+    expect(log).not.toContain("### soft-2");
   });
 });

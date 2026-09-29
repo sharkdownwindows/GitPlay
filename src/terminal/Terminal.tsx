@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 import type { Command } from "../core/types";
 import {
   editInput,
@@ -9,23 +9,31 @@ import {
 } from "./session";
 
 interface Props {
-  onCommand: (command: Command) => void;
+  onCommand: (command: Command) => boolean | void;
   output: readonly string[];
+  disabled?: boolean;
 }
 
-export function Terminal({ onCommand, output }: Props) {
+export function Terminal({ onCommand, output, disabled = false }: Props) {
   const [session, setSession] = useState(initialTerminalSession);
+  const sessionRef = useRef(session);
+
+  function updateSession(next: typeof session): void {
+    sessionRef.current = next;
+    setSession(next);
+  }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
     if (event.key === "Enter") {
       event.preventDefault();
-      setSession(submitInput(session, onCommand));
+      if (disabled) return;
+      updateSession(submitInput(sessionRef.current, onCommand));
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
-      setSession(previousCommand);
+      updateSession(previousCommand(sessionRef.current));
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
-      setSession(nextCommand);
+      updateSession(nextCommand(sessionRef.current));
     }
   }
 
@@ -46,11 +54,12 @@ export function Terminal({ onCommand, output }: Props) {
         <span aria-hidden="true">$</span>
         <input
           type="text"
+          disabled={disabled}
           aria-label="Git command"
           autoComplete="off"
           spellCheck={false}
           value={session.input}
-          onChange={(event) => setSession((current) => editInput(current, event.target.value))}
+          onChange={(event) => updateSession(editInput(sessionRef.current, event.target.value))}
           onKeyDown={handleKeyDown}
           className="min-w-0 flex-1 bg-transparent outline-none"
         />
