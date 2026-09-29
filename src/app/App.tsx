@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Practice } from "./Practice";
 import { VerificationTab } from "../verification/VerificationTab";
+import { CommandRefPanel } from "../commands-ref/CommandRefPanel";
 
 /**
  * SHELL — ĐÓNG BĂNG NGÀY 1.
@@ -60,6 +61,8 @@ export function App() {
           <Practice />
         ) : current.id === "verification" ? (
           <VerificationTab />
+        ) : current.id === "reference" ? (
+          <CommandRefPanel />
         ) : (
           <>
             <h1 className="text-lg font-medium">{current.label}</h1>

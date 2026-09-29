@@ -4,21 +4,23 @@ import { RefLabel } from "./RefLabel";
 
 interface Props {
   state: RepoState;
+  width?: number;
+  height?: number;
 }
 
-/** Static SVG view of the repository. All positions come from layout(). */
-export function GraphView({ state }: Props) {
+/** SVG view of the repository. CSS animates positions; layout() remains the source of truth. */
+export function GraphView({ state, width, height }: Props) {
   const graph = layout(state);
   const positions = new Map(graph.nodes.map((node) => [node.id, node]));
   const branches = Object.entries(state.branches).sort(([a], [b]) => a.localeCompare(b));
-  const width = Math.max(graph.width + 160, 240);
-  const height = Math.max(graph.height + 80, 100);
+  const naturalWidth = Math.max(graph.width + 160, 240);
+  const naturalHeight = Math.max(graph.height + 80, 100);
 
   return (
     <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      width={width ?? naturalWidth}
+      height={height ?? naturalHeight}
+      viewBox={`0 0 ${naturalWidth} ${naturalHeight}`}
       role="img"
       aria-label="Git commit graph"
     >
@@ -55,19 +57,20 @@ export function GraphView({ state }: Props) {
         const detached = state.head.detached && state.head.commit === node.id;
 
         return (
-          <g key={node.id} data-commit-id={node.id}>
-            <circle cx={node.x} cy={node.y} r={14} fill="#0f172a" stroke="#38bdf8" strokeWidth={2} />
-            <text x={node.x} y={node.y + 4} textAnchor="middle" fontSize={10} fill="white">
+          <g key={node.id} data-commit-id={node.id} className="graph-node"
+            style={{ transform: `translate(${node.x}px, ${node.y}px)` }}>
+            <circle cx={0} cy={0} r={14} fill="#0f172a" stroke="#38bdf8" strokeWidth={2} />
+            <text x={0} y={4} textAnchor="middle" fontSize={10} fill="white">
               {node.id}
             </text>
             {names.map((name, index) => (
-              <RefLabel key={name} x={node.x} y={node.y + 20 + index * 20}
+              <RefLabel key={name} x={0} y={20 + index * 20}
                 label={name} kind="branch" ariaLabel={`branch ${name}`} />
             ))}
             {(attached || detached) && (
               <RefLabel
-                x={node.x}
-                y={node.y + 20 + names.length * 20}
+                x={0}
+                y={20 + names.length * 20}
                 kind={attached ? "attached" : "detached"}
                 ariaLabel={attached
                   ? `HEAD attached to ${state.head.ref}`

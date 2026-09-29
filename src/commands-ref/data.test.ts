@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RepoState } from "../core/types";
 import { parse } from "../terminal/parse";
 import { commandReferences } from "./data";
+import { referenceAfter } from "./referenceAfter";
 
 function expectValidState(state: RepoState): void {
   const visiting = new Set<string>();
@@ -53,7 +54,7 @@ describe("command reference data", () => {
 
   it("provides nonempty English text and syntax accepted by the parser", () => {
     for (const entry of commandReferences) {
-      for (const text of [entry.syntax, entry.description, entry.effect]) {
+      for (const text of [entry.syntax, entry.description, entry.effect, entry.gotcha]) {
         expect(text.trim().length).toBeGreaterThan(0);
       }
       expect(parse(entry.syntax)).toMatchObject({ kind: entry.key });
@@ -69,5 +70,13 @@ describe("command reference data", () => {
 
   it("is JSON serializable without losing data", () => {
     expect(JSON.parse(JSON.stringify(commandReferences))).toEqual(commandReferences);
+  });
+
+  it("stores the exact after-state produced by the real engine", () => {
+    for (const entry of commandReferences) {
+      const before = structuredClone(entry.before);
+      expect(referenceAfter(entry), entry.key).toEqual(entry.after);
+      expect(entry.before).toEqual(before);
+    }
   });
 });
