@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-29T15:27:45.618Z",
-  "commitSha": "37eddcade0522c00866f1d8616f59d3eef64189c",
+  "generatedAt": "2026-09-29T23:42:19.461Z",
+  "commitSha": "5c3084e93ca5d772a5d0e89bf0ce3384b1890d73",
   "gitVersion": "git version 2.31.1.windows.1",
   "nodeVersion": "v24.16.0",
   "diffTest": {
@@ -12,7 +12,7 @@
     "exhaustiveDepth": 2,
     "randomCases": 0,
     "seed": 42,
-    "durationMs": 157462.3551
+    "durationMs": 142462.3897
   },
   "coverage": {
     "commit": 120,
@@ -27,27 +27,61 @@
       "points": [
         {
           "n": 100,
-          "medianMs": 0.19980000000214204,
-          "p95Ms": 0.42490000001271255,
+          "medianMs": 0.20160000000032596,
+          "p95Ms": 0.22029999998630956,
           "iterations": 7
         },
         {
           "n": 1000,
-          "medianMs": 1.4241000000038184,
-          "p95Ms": 1.5239000000001397,
+          "medianMs": 1.2708999999740627,
+          "p95Ms": 1.8960999999835622,
           "iterations": 7
         },
         {
           "n": 10000,
-          "medianMs": 16.518699999985984,
-          "p95Ms": 23.553100000019185,
+          "medianMs": 16.26129999998375,
+          "p95Ms": 23.240200000000186,
           "iterations": 7
         },
         {
           "n": 100000,
-          "medianMs": 256.02679999999236,
-          "p95Ms": 287.61960000000545,
+          "medianMs": 230.83770000000368,
+          "p95Ms": 269.2396000000008,
           "iterations": 7
+        }
+      ]
+    },
+    {
+      "label": "SVG render",
+      "points": [
+        {
+          "n": 100,
+          "medianMs": 31.299999952316284,
+          "p95Ms": 32.60000002384186,
+          "iterations": 5
+        },
+        {
+          "n": 1000,
+          "medianMs": 130.9000000357628,
+          "p95Ms": 150.30000001192093,
+          "iterations": 5
+        },
+        {
+          "n": 10000,
+          "medianMs": 1298.5,
+          "p95Ms": 1613.5,
+          "iterations": 5
+        }
+      ]
+    },
+    {
+      "label": "animation frame",
+      "points": [
+        {
+          "n": 200,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.800000000000182,
+          "iterations": 215
         }
       ]
     }
@@ -60,7 +94,7 @@
       "commands": [
         "git commit --allow-empty -m C2"
       ],
-      "expected": "[main (root-commit) ccfbe27] C2",
+      "expected": "[main (root-commit) 2fe888c] C2",
       "actual": "[main (root-commit) c1] C2"
     },
     {
@@ -71,7 +105,7 @@
         "git commit --allow-empty -m C2",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main c02bbf9] C3",
+      "expected": "[main 0ca041d] C3",
       "actual": "[main c2] C3"
     },
     {
@@ -82,7 +116,7 @@
         "git commit --allow-empty -m C2",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'fe71579b64908a49e729cc8cbb0071543d5b8fa7'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at fe71579 C2",
+      "expected": "Note: switching to '70ac21dc6e7128c7cc383aed85ad434b39786e52'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 70ac21d C2",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -93,7 +127,7 @@
         "git branch",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main (root-commit) 9855297] C3",
+      "expected": "[main (root-commit) 71b073d] C3",
       "actual": "[main (root-commit) c1] C3"
     },
     {
@@ -104,7 +138,7 @@
         "git switch -c topic",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[topic (root-commit) 480848d] C3",
+      "expected": "[topic (root-commit) e207316] C3",
       "actual": "[topic (root-commit) c1] C3"
     },
     {
@@ -115,7 +149,7 @@
         "git checkout -b topic",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[topic (root-commit) 67fc334] C3",
+      "expected": "[topic (root-commit) 66afef2] C3",
       "actual": "[topic (root-commit) c1] C3"
     },
     {
@@ -125,7 +159,7 @@
       "commands": [
         "git commit --allow-empty -m C0"
       ],
-      "expected": "[main (root-commit) 58d2f51] C0",
+      "expected": "[main (root-commit) dab8f30] C0",
       "actual": "[main (root-commit) c1] C0"
     },
     {
@@ -138,7 +172,7 @@
         "git switch -- feature",
         "git commit --allow-empty -m C1"
       ],
-      "expected": "[feature 2bc8ad6] C1",
+      "expected": "[feature a2b1983] C1",
       "actual": "[feature c2] C1"
     },
     {
@@ -153,7 +187,7 @@
         "git checkout main",
         "git commit --allow-empty -m C2"
       ],
-      "expected": "[main bf8a419] C2",
+      "expected": "[main df3d7a8] C2",
       "actual": "[main c3] C2"
     },
     {
@@ -183,7 +217,7 @@
         "git checkout main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '88f99443c61ad4f1096224612f0c6a58da637b0d'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 88f9944 C0",
+      "expected": "Note: switching to 'be85097ad0d828747087ca681a5fb0e84be66dda'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at be85097 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -198,7 +232,7 @@
         "git checkout main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating b8555c5..716f188\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating e882b4e..17b72b1\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -214,7 +248,7 @@
         "git commit --allow-empty -m C2",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 2e899a5] C3",
+      "expected": "[main 8ed0fdb] C3",
       "actual": "[main c4] C3"
     },
     {
@@ -246,7 +280,7 @@
         "git commit --allow-empty -m C2",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '94094a53ccb79ca9cda0d652c3c69b32476aefed'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 94094a5 C0",
+      "expected": "Note: switching to '5c4eb002dbab7e202bef799bd3b4a72288f19906'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 5c4eb00 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -278,7 +312,7 @@
         "git branch",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main b8810cd] C3",
+      "expected": "[main 2a98769] C3",
       "actual": "[main c3] C3"
     },
     {
@@ -310,7 +344,7 @@
         "git branch",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '8da7d559d6f47216c7d66803891fb946fc197741'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 8da7d55 C0",
+      "expected": "Note: switching to '0fd2bd56b058348781dcdacc2531cef1f3fcaf71'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 0fd2bd5 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -326,7 +360,7 @@
         "git branch",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 5bcb4ab..50355bb\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 41639b4..9c97ebe\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -342,7 +376,7 @@
         "git switch -- main",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 672eede] C3",
+      "expected": "[main b920ab8] C3",
       "actual": "[main c3] C3"
     },
     {
@@ -374,7 +408,7 @@
         "git switch -- main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '41a513fafffb6ca5f883901646ccf4829fbe9fb4'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 41a513f C0",
+      "expected": "Note: switching to 'f459584ef70fbd570c4faf61f480bd2470177d9c'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at f459584 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -390,7 +424,7 @@
         "git switch -- main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 066eeb8..09f481d\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating f66fe0c..4121144\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -406,7 +440,7 @@
         "git switch -- feature",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[feature c0080b5] C3",
+      "expected": "[feature ff26b5b] C3",
       "actual": "[feature c3] C3"
     },
     {
@@ -422,7 +456,7 @@
         "git switch -- feature",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '5576b7fc4eef86e68088944e7e6dd71a8b1f6a71'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 5576b7f C0",
+      "expected": "Note: switching to 'e3ee7097e5beb2666d77af003a1bca78c9437c5d'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at e3ee709 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -438,7 +472,7 @@
         "git switch -c topic",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[topic 97315bb] C3",
+      "expected": "[topic 47e9b3e] C3",
       "actual": "[topic c3] C3"
     },
     {
@@ -470,7 +504,7 @@
         "git switch -c topic",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'd590e85b9100d37657c990e2b47e43c31f714ed7'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at d590e85 C0",
+      "expected": "Note: switching to 'c20e9a2db59cae63425f7ba6cf8765b7967d1ea8'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at c20e9a2 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -486,7 +520,7 @@
         "git switch -c topic",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 4a94f31..a9f804d\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 5214cf3..f6e79c4\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -502,7 +536,7 @@
         "git checkout main",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 3e75ee5] C3",
+      "expected": "[main d398462] C3",
       "actual": "[main c3] C3"
     },
     {
@@ -534,7 +568,7 @@
         "git checkout main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '4707e86e5f0ac1d2490b8f9e2070edcd4a68a93a'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 4707e86 C0",
+      "expected": "Note: switching to '30f166e581952164d3d74890c2a33c9445920ee6'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 30f166e C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -550,7 +584,7 @@
         "git checkout main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 9060d43..247b028\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 17bf357..2e4587a\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -566,7 +600,7 @@
         "git checkout c1",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[detached HEAD b18997b] C3",
+      "expected": "[detached HEAD a7e9362] C3",
       "actual": "[detached HEAD c3] C3"
     },
     {
@@ -582,7 +616,7 @@
         "git checkout c1",
         "git branch"
       ],
-      "expected": "* (HEAD detached at b30d5df)\n  feature\n  main",
+      "expected": "* (HEAD detached at 8a78675)\n  feature\n  main",
       "actual": "  feature\n  main"
     },
     {
@@ -598,7 +632,7 @@
         "git checkout c1",
         "git switch -- feature"
       ],
-      "expected": "Previous HEAD position was 867fe10 C0\nSwitched to branch 'feature'",
+      "expected": "Previous HEAD position was 83aa8f1 C0\nSwitched to branch 'feature'",
       "actual": "Switched to branch 'feature'"
     },
     {
@@ -614,7 +648,7 @@
         "git checkout c1",
         "git checkout c1"
       ],
-      "expected": "HEAD is now at 0bbffa2 C0",
+      "expected": "HEAD is now at e36c614 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -630,7 +664,7 @@
         "git checkout c1",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 62125c3..2c160c1\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 3436b03..f0e4c20\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -646,7 +680,7 @@
         "git checkout -b topic",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[topic d612e84] C3",
+      "expected": "[topic bf26db4] C3",
       "actual": "[topic c3] C3"
     },
     {
@@ -678,7 +712,7 @@
         "git checkout -b topic",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '4c5f00aa105a2f76c4f1e43b85f04431d0bb5947'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 4c5f00a C0",
+      "expected": "Note: switching to 'c9a1fd616f7ba5bf93133c2f2ade7e6517c85299'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at c9a1fd6 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -694,7 +728,7 @@
         "git checkout -b topic",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 808a5e7..4b0108c\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating ba8fb7f..2619a1b\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -710,7 +744,7 @@
         "git merge -m \"Merge branch 'main'\" -- main",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 292ad19] C3",
+      "expected": "[main bcc88f2] C3",
       "actual": "[main c3] C3"
     },
     {
@@ -742,7 +776,7 @@
         "git merge -m \"Merge branch 'main'\" -- main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'e2fd7e3809cf450518a9ee24ab26c055853de4a3'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at e2fd7e3 C0",
+      "expected": "Note: switching to '11707bb4d2e2e532a4a9697e46e791de24eaa3a1'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 11707bb C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
@@ -758,7 +792,7 @@
         "git merge -m \"Merge branch 'main'\" -- main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 5a8b9c1..f43dcfc\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 09b0494..e3f5976\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
@@ -774,7 +808,7 @@
         "git merge -m \"Merge branch 'feature'\" -- feature",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main eca89e9] C3",
+      "expected": "[main 28fd26b] C3",
       "actual": "[main c3] C3"
     },
     {
@@ -806,7 +840,7 @@
         "git merge -m \"Merge branch 'feature'\" -- feature",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '46cb5c64c3bcb02b1314adb5100e765197e19588'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 46cb5c6 C0",
+      "expected": "Note: switching to '8b6816c40c3756f751f52bc4e6f812bc4778cc7f'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 8b6816c C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     }
   ]

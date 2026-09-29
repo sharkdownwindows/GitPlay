@@ -1,8 +1,9 @@
-import { renameSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import type { ScalingSeries, VerificationReport } from "../src/verification/report";
 import { SCHEMA_VERSION, isVerificationReport } from "../src/verification/report";
 import { benchmarkLayout } from "./bench/layout";
+import { browserSeriesForReport } from "./bench/browserMetrics";
 import { formatDivergenceLog, runDifferential, type DifferentialResult } from "./diff/run";
 import { runEngine } from "./diff/adapter";
 import { generateInvalidSequences, generateRandomSequences, generateValidSequences } from "./diff/generate";
@@ -53,7 +54,8 @@ function writeAtomically(path: string, content: string): void {
   renameSync(temporary, path);
 }
 
-export function makeVerificationReport(diff: DifferentialResult, scaling: ScalingSeries): VerificationReport {
+export function makeVerificationReport(diff: DifferentialResult, scaling: ScalingSeries,
+  browserScaling: ScalingSeries[] = []): VerificationReport {
   return {
     schemaVersion: SCHEMA_VERSION,
     generatedAt: new Date().toISOString(),
@@ -62,7 +64,7 @@ export function makeVerificationReport(diff: DifferentialResult, scaling: Scalin
     nodeVersion: process.version,
     diffTest: diff.summary,
     coverage: diff.coverage,
-    scaling: [scaling],
+    scaling: [scaling, ...browserScaling],
     divergences: diff.divergences,
   };
 }
@@ -82,7 +84,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     throw new Error(`${invalid.summary.failed} invalid-command hard failures`);
   }
   const diff = combineValidResults(exhaustive, random);
-  const report = makeVerificationReport(diff, benchmarkLayout());
+  const browserPath = "harness/bench/browser-results.json";
+  const browserScaling = existsSync(browserPath)
+    ? browserSeriesForReport(JSON.parse(readFileSync(browserPath, "utf8")), diff.commitSha) : [];
+  const report = makeVerificationReport(diff, benchmarkLayout(), browserScaling);
   validateGeneratedReport(report);
   writeAtomically("public/verification.json", `${JSON.stringify(report, null, 2)}\n`);
   writeAtomically("docs/divergences.md", formatDivergenceLog(diff));
