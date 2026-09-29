@@ -61,9 +61,19 @@ describe("switch", () => {
     }
   });
 
-  it("returns a classified error when creating a branch before the first commit", () => {
+  it("creates an unborn branch without a ref before the first commit", () => {
     const initial = emptyState();
-    expect(execute(initial, { kind: "switch", target: "topic", detach: false, create: true }))
+    const before = structuredClone(initial);
+    const result = execute(initial, { kind: "switch", target: "topic", detach: false, create: true });
+    expect(result).toEqual({
+      ok: true, output: ["Switched to a new branch 'topic'"],
+      state: { ...initial, commits: {}, branches: {},
+        head: { detached: false, ref: "topic", commit: null } },
+    });
+    expect(initial).toEqual(before);
+    expect(result.state).not.toBe(initial);
+    expect(execute(initial, { kind: "branch", name: "topic" }))
       .toMatchObject({ ok: false, errorClass: "NoCommitsYet", state: initial });
+    expect(execute(result.state, { kind: "commit", message: "first" }).state.branches.topic).toBe("c1");
   });
 });

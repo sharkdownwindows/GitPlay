@@ -5,7 +5,14 @@ import type { RepoState, Result } from "../types";
 export function checkout(state: RepoState, target: string, create: boolean): Result {
   if (create) {
     const created = branch(state, target);
-    if (!created.ok) return created;
+    if (!created.ok) {
+      if (created.errorClass !== "NoCommitsYet" || Object.keys(state.commits).length !== 0 ||
+          Object.keys(state.branches).length !== 0 || state.head.detached || state.head.ref === null) {
+        return created;
+      }
+      return succeed({ ...state, head: { detached: false, ref: target, commit: null } },
+        [`Switched to a new branch '${target}'`]);
+    }
     return succeed(
       { ...created.state, head: { detached: false, ref: target, commit: null } },
       [`Switched to a new branch '${target}'`],

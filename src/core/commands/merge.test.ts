@@ -26,20 +26,42 @@ describe("merge", () => {
     expect(result.output).toContain("Fast-forward");
   });
 
-  it("reports AlreadyUpToDate when target is an ancestor", () => {
+  it("succeeds without changing state when target is an ancestor", () => {
     const initial = state();
     initial.branches.feature = "c1";
+    const before = structuredClone(initial);
     const result = execute(initial, { kind: "merge", branch: "feature" });
-    expect(result).toMatchObject({ ok: false, errorClass: "AlreadyUpToDate", state: initial });
-    expect(result.output[0]?.length).toBeGreaterThan(0);
+    expect(result).toEqual({ ok: true, state: initial, output: ["Already up to date."] });
+    expect(result.state).toBe(initial);
+    expect(initial).toEqual(before);
   });
 
-  it("rejects self-merge and missing branches", () => {
+  it("succeeds without changing state on self-merge", () => {
     const initial = state();
-    expect(execute(initial, { kind: "merge", branch: "main" }))
-      .toMatchObject({ ok: false, errorClass: "CannotMergeIntoSelf", state: initial });
+    const before = structuredClone(initial);
+    const result = execute(initial, { kind: "merge", branch: "main" });
+    expect(result).toEqual({ ok: true, state: initial, output: ["Already up to date."] });
+    expect(result.state).toBe(initial);
+    expect(initial).toEqual(before);
+  });
+
+  it("still rejects missing branches", () => {
+    const initial = state();
     expect(execute(initial, { kind: "merge", branch: "missing" }))
       .toMatchObject({ ok: false, errorClass: "PathspecNotFound", state: initial });
+  });
+
+  it("does not emit the legacy no-op error classes from the v1 engine", () => {
+    const initial = state();
+    const ancestor = state();
+    ancestor.branches.feature = "c1";
+    for (const result of [
+      execute(initial, { kind: "merge", branch: "main" }),
+      execute(ancestor, { kind: "merge", branch: "feature" }),
+    ]) {
+      expect(result.ok).toBe(true);
+      expect(result.errorClass).toBeUndefined();
+    }
   });
 
   it("creates one deterministic merge commit with ordered parents", () => {
