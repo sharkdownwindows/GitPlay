@@ -1,5 +1,6 @@
 import type { RepoState } from "../core/types";
 import { layout } from "./layout";
+import { RefLabel } from "./RefLabel";
 
 interface Props {
   state: RepoState;
@@ -24,11 +25,9 @@ export function GraphView({ state }: Props) {
       {graph.nodes.length === 0 && (
         <>
           <text x={16} y={32} fill="currentColor">No commits yet</text>
-          <text x={16} y={56} fill="currentColor">
-            {state.head.detached
-              ? "HEAD detached"
-              : `HEAD → ${state.head.ref ?? "?"} (unborn)`}
-          </text>
+          <RefLabel x={90} y={42} kind={state.head.detached ? "detached" : "attached"}
+            ariaLabel={state.head.detached ? "HEAD detached" : `HEAD attached to ${state.head.ref}`}
+            label={state.head.detached ? "HEAD detached" : `HEAD → ${state.head.ref ?? "?"} (unborn)`} />
         </>
       )}
 
@@ -62,32 +61,19 @@ export function GraphView({ state }: Props) {
               {node.id}
             </text>
             {names.map((name, index) => (
-              <text
-                key={name}
-                x={node.x}
-                y={node.y + 28 + index * 16}
-                textAnchor="middle"
-                fontSize={11}
-                fill="#22c55e"
-                aria-label={`branch ${name}`}
-              >
-                {name}
-              </text>
+              <RefLabel key={name} x={node.x} y={node.y + 20 + index * 20}
+                label={name} kind="branch" ariaLabel={`branch ${name}`} />
             ))}
             {(attached || detached) && (
-              <text
+              <RefLabel
                 x={node.x}
-                y={node.y + 28 + names.length * 16}
-                textAnchor="middle"
-                fontSize={11}
-                fontWeight="bold"
-                fill="#fbbf24"
-                aria-label={attached
+                y={node.y + 20 + names.length * 20}
+                kind={attached ? "attached" : "detached"}
+                ariaLabel={attached
                   ? `HEAD attached to ${state.head.ref}`
                   : `HEAD detached at ${node.id}`}
-              >
-                {attached ? `HEAD → ${state.head.ref}` : "HEAD detached"}
-              </text>
+                label={attached ? `HEAD → ${state.head.ref}` : `HEAD detached at ${node.id}`}
+              />
             )}
           </g>
         );

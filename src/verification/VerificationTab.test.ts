@@ -61,12 +61,10 @@ describe("verification presentation", () => {
     expect(html).toContain("branch</span>: 3");
   });
 
-  it("renders scaling points from the report", () => {
+  it("does not plot sample scaling placeholders as measurements", () => {
     const html = render(createElement(ScalingChart, { series: report.scaling }));
-    expect(html).toContain("layout()");
-    expect(html).toContain("100000");
-    expect(html).toContain("Median (ms)");
-    expect(html).toContain("p95 (ms)");
+    expect(html).toContain("No measured scaling data available.");
+    expect(html).not.toContain("<circle");
   });
 
   it("shows no divergences or the actual divergence list", () => {
