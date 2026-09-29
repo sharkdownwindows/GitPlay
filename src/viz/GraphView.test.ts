@@ -39,6 +39,8 @@ describe("GraphView", () => {
     expect(html).toContain('data-commit-id="c1"');
     expect(html).toContain('data-commit-id="c2"');
     expect(html.match(/<circle\b/g)).toHaveLength(2);
+    expect(html).toContain(`<circle cx="${child.x}" cy="${child.y}"`);
+    expect(html).toContain(`<circle cx="${parent.x}" cy="${parent.y}"`);
     expect(html).toContain(
       `<line x1="${child.x}" y1="${child.y}" x2="${parent.x}" y2="${parent.y}"`,
     );
@@ -50,6 +52,10 @@ describe("GraphView", () => {
     expect(html).toContain('aria-label="branch main"');
     expect(html).toContain('aria-label="HEAD attached to main"');
     expect(html).toContain("HEAD → main");
+    expect(html.match(/data-ref-kind="branch"/g)).toHaveLength(2);
+    expect(html).toContain('data-ref-kind="attached"');
+    expect(html).not.toContain('data-ref-kind="detached"');
+    expect(html).toContain('fill="#92400e"');
   });
 
   it("hiển thị detached HEAD tại commit thay vì gắn với branch", () => {
@@ -59,6 +65,9 @@ describe("GraphView", () => {
     expect(html).toContain('aria-label="HEAD detached at c1"');
     expect(html).toContain("HEAD detached");
     expect(html).not.toContain("HEAD → main");
+    expect(html).toContain('data-ref-kind="detached"');
+    expect(html).not.toContain('data-ref-kind="attached"');
+    expect(html).toContain('fill="#b91c1c"');
   });
 
   it("không mutate RepoState và không tạo animation", () => {
