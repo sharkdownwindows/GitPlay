@@ -1,0 +1,77 @@
+import { describe, expect, it } from "vitest";
+import { formatDivergenceLog, gitErrorClass, runDifferential } from "./run";
+import { runEngine } from "./adapter";
+import { runReal } from "./runReal";
+import { normalizeEngine, normalizeReal } from "./normalize";
+
+describe("differential runner", () => {
+  it("classifies an unborn branch creation failure", () => {
+    expect(gitErrorClass({ kind: "branch", name: "feature" },
+      { status: 128, output: "fatal: Not a valid object name: 'main'." })).toBe("NoCommitsYet");
+  });
+  it("detects an injected state defect as a hard failure", () => {
+    const result = runDifferential(0, (commands) => {
+      const run = runEngine(commands);
+      return { ...run, state: { ...run.state, branches: { ...run.state.branches, main: "missing" } } };
+    });
+    expect(result.summary.failed).toBe(1);
+    expect(result.divergences.some((divergence) => divergence.severity === "hard")).toBe(true);
+  });
+
+  it("detects a corrupt intermediate step even if the final state is restored", () => {
+    const result = runDifferential(0, (commands) => {
+      const run = runEngine(commands);
+      if (commands.length > 2) {
+        const step = run.steps[2]!;
+        run.steps[2] = { ...step, result: { ...step.result,
+          state: { ...step.result.state, branches: { ...step.result.state.branches, main: "missing" } } } };
+      }
+      return run;
+    });
+    expect(result.summary.failed).toBe(1);
+    expect(result.divergences.some((item) => item.kind === "state" && item.commands.length === 3)).toBe(true);
+  });
+
+  it.each([
+    [{ kind: "branch" as const, name: "feature" }, "fatal: Not a valid object name: 'main'.", "NoCommitsYet"],
+    [{ kind: "branch" as const, name: "--list" }, "fatal: '--list' is not a valid branch name", "InvalidRefName"],
+    [{ kind: "branch" as const, name: "feature" }, "fatal: a branch named 'feature' already exists", "BranchAlreadyExists"],
+    [{ kind: "switch" as const, target: "missing", create: false, detach: false }, "fatal: invalid reference: missing", "PathspecNotFound"],
+    [{ kind: "checkout" as const, target: "missing", create: false }, "error: pathspec 'missing' did not match any file", "PathspecNotFound"],
+    [{ kind: "merge" as const, branch: "missing" }, "merge: missing - not something we can merge", "PathspecNotFound"],
+    [{ kind: "merge" as const, branch: "feature" }, "CONFLICT (content): Merge conflict", "MergeConflict"],
+  ])("classifies known Git failure %#", (command, output, expected) => {
+    expect(gitErrorClass(command, { status: 1, output })).toBe(expected);
+  });
+
+  it("leaves unsupported and unknown Git outcomes unclassified", () => {
+    expect(gitErrorClass({ kind: "merge", branch: "main" }, { status: 0, output: "Already up to date." }))
+      .toBeUndefined();
+    expect(gitErrorClass({ kind: "switch", target: "x", create: false, detach: false },
+      { status: 1, output: "unfamiliar future Git error" })).toBeUndefined();
+  });
+
+  it.each([
+    [[{ kind: "commit" as const, message: "C0" }, { kind: "merge" as const, branch: "main" }], "self-merge"],
+    [[{ kind: "commit" as const, message: "C0" }, { kind: "branch" as const, name: "feature" },
+      { kind: "commit" as const, message: "C1" }, { kind: "merge" as const, branch: "feature" }], "ancestor merge"],
+  ])("matches real Git for %s", (commands) => {
+    const engine = runEngine(commands);
+    const git = runReal(commands);
+    const result = engine.steps.at(-1)?.result;
+    expect(result?.ok).toBe(true);
+    expect(result?.errorClass).toBeUndefined();
+    expect(result?.state).toBe(engine.steps.at(-2)?.result.state);
+    expect(git.steps.at(-1)?.result.status).toBe(0);
+    expect(normalizeReal(git.state)).toEqual(normalizeReal(git.steps.at(-2)!.state));
+    expect(normalizeEngine(engine.state)).toEqual(normalizeReal(git.state));
+  });
+
+  it("records every observed divergence and keeps an entry template", () => {
+    const result = runDifferential(0, runEngine);
+    const log = formatDivergenceLog(result);
+    expect(log).toContain("Command sequence:");
+    expect(log).toContain("Expected (Git):");
+    expect(log).toContain("Fixing commit:");
+  });
+});
