@@ -39,8 +39,9 @@ describe("GraphView", () => {
     expect(html).toContain('data-commit-id="c1"');
     expect(html).toContain('data-commit-id="c2"');
     expect(html.match(/<circle\b/g)).toHaveLength(2);
-    expect(html).toContain(`<circle cx="${child.x}" cy="${child.y}"`);
-    expect(html).toContain(`<circle cx="${parent.x}" cy="${parent.y}"`);
+    expect(html).toContain(`transform:translate(${child.x}px, ${child.y}px)`);
+    expect(html).toContain(`transform:translate(${parent.x}px, ${parent.y}px)`);
+    expect(html.match(/<circle cx="0" cy="0"/g)).toHaveLength(2);
     expect(html).toContain(
       `<line x1="${child.x}" y1="${child.y}" x2="${parent.x}" y2="${parent.y}"`,
     );
@@ -70,12 +71,12 @@ describe("GraphView", () => {
     expect(html).toContain('fill="#b91c1c"');
   });
 
-  it("không mutate RepoState và không tạo animation", () => {
+  it("does not mutate RepoState when rendering animated nodes", () => {
     const state = sampleState();
     const before = structuredClone(state);
     const html = render(state);
     expect(state).toEqual(before);
-    expect(html).not.toMatch(/<animate\b|transition|animation/i);
+    expect(html).toContain('class="graph-node"');
   });
 
   it("viz không import terminal, levels hoặc verification", () => {
