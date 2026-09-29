@@ -51,9 +51,17 @@ describe("checkout", () => {
     }
   });
 
-  it("cannot create a branch in an unborn repository", () => {
+  it("creates an unborn branch without a ref before the first commit", () => {
     const initial = emptyState();
-    expect(execute(initial, { kind: "checkout", target: "topic", create: true }))
-      .toMatchObject({ ok: false, errorClass: "NoCommitsYet", state: initial });
+    const before = structuredClone(initial);
+    const result = execute(initial, { kind: "checkout", target: "topic", create: true });
+    expect(result).toEqual({
+      ok: true, output: ["Switched to a new branch 'topic'"],
+      state: { ...initial, commits: {}, branches: {},
+        head: { detached: false, ref: "topic", commit: null } },
+    });
+    expect(initial).toEqual(before);
+    expect(result.state).not.toBe(initial);
+    expect(execute(result.state, { kind: "commit", message: "first" }).state.branches.topic).toBe("c1");
   });
 });

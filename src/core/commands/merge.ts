@@ -18,7 +18,7 @@ export function merge(state: RepoState, branchName: string): Result {
     return fail(state, "PathspecNotFound", branchName);
   }
   if (!state.head.detached && state.head.ref === branchName) {
-    return fail(state, "CannotMergeIntoSelf");
+    return succeed(state, ["Already up to date."]);
   }
 
   const currentRef = state.head.ref;
@@ -30,7 +30,7 @@ export function merge(state: RepoState, branchName: string): Result {
   if (current === null || !Object.hasOwn(state.commits, current)) {
     return fail(state, "NoCommitsYet");
   }
-  if (isAncestor(state, target, current)) return fail(state, "AlreadyUpToDate");
+  if (isAncestor(state, target, current)) return succeed(state, ["Already up to date."]);
 
   const moveHead = (id: string): Pick<RepoState, "head" | "branches"> =>
     state.head.detached
