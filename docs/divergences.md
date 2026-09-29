@@ -2,13 +2,13 @@
 
 ## Run metadata
 
-Commit SHA: a7aa37722b32e74af0c658bfb43dea6419e5c6e8
+Commit SHA: 37eddcade0522c00866f1d8616f59d3eef64189c
 Git version: git version 2.31.1.windows.1
-Seed: 0
+Seed: 42
 Exhaustive depth: 2
-Cases: 482
+Cases: 133
 Hard failures: 0
-Output warnings: 306
+Output warnings: 50
 Alphabet size: 15
 Fixtures: empty (setup 0), fork (setup 5)
 
@@ -20,45 +20,71 @@ No hard divergences observed; no harness-detected hard divergence has a verified
 
 ## Soft output differences
 
-### branch (78 warnings)
+### branch (10 warnings)
 
 Representative command sequence:
 ```text
+git commit --allow-empty -m C0
 git branch -- feature
+git switch -- feature
+git commit --allow-empty -m C1
+git checkout main
+git branch
 ```
 
 Expected (Git):
 ```text
-fatal: Not a valid object name: 'main'.
+feature
+* main
 ```
 
 Actual (GitScope):
 ```text
-fatal: your current branch does not have any commits yet
+  feature
+* main
 ```
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### checkout (51 warnings)
+### checkout (12 warnings)
 
 Representative command sequence:
 ```text
-git checkout refs/heads/--help
+git commit --allow-empty -m C2
+git checkout c1
 ```
 
 Expected (Git):
 ```text
-error: pathspec 'refs/heads/--help' did not match any file(s) known to git
+Note: switching to 'fe71579b64908a49e729cc8cbb0071543d5b8fa7'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at fe71579 C2
 ```
 
 Actual (GitScope):
 ```text
-error: pathspec '--help' did not match any file(s) known to git
+Note: switching to 'c1'.
+You are in 'detached HEAD' state.
 ```
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### commit (34 warnings)
+### commit (18 warnings)
 
 Representative command sequence:
 ```text
@@ -67,7 +93,7 @@ git commit --allow-empty -m C2
 
 Expected (Git):
 ```text
-[main (root-commit) d1e1527] C2
+[main (root-commit) ccfbe27] C2
 ```
 
 Actual (GitScope):
@@ -77,40 +103,54 @@ Actual (GitScope):
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### merge (77 warnings)
+### merge (9 warnings)
 
 Representative command sequence:
 ```text
-git merge -m "Merge branch 'main'" -- main
+git commit --allow-empty -m C0
+git branch -- feature
+git switch -- feature
+git commit --allow-empty -m C1
+git checkout main
+git merge -m "Merge branch 'feature'" -- feature
 ```
 
 Expected (Git):
 ```text
-merge: main - not something we can merge
+Updating b8555c5..716f188
+Fast-forward (no commit created; -m option ignored)
 ```
 
 Actual (GitScope):
 ```text
-error: pathspec 'main' did not match any file(s) known to git
+Updating c1..c2
+Fast-forward
 ```
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### switch (66 warnings)
+### switch (1 warnings)
 
 Representative command sequence:
 ```text
-git switch -- main
+git commit --allow-empty -m C0
+git branch -- feature
+git switch -- feature
+git commit --allow-empty -m C1
+git checkout main
+git checkout c1
+git switch -- feature
 ```
 
 Expected (Git):
 ```text
-fatal: invalid reference: main
+Previous HEAD position was 867fe10 C0
+Switched to branch 'feature'
 ```
 
 Actual (GitScope):
 ```text
-error: pathspec 'main' did not match any file(s) known to git
+Switched to branch 'feature'
 ```
 
 Grouped by the command producing the output difference; other wording may differ within this group.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ACTIONS, FIXTURES, generateSequences } from "./generate";
+import { ACTIONS, FIXTURES, generateSequences, generateValidSequences, generateRandomSequences, generateInvalidSequences } from "./generate";
+import { runEngine } from "./adapter";
 
 describe("fixed exhaustive command generation", () => {
   it("enumerates every suffix of length zero through two for each fixture", () => {
@@ -23,5 +24,28 @@ describe("fixed exhaustive command generation", () => {
       command.kind === "merge" && command.branch === "feature"))).toBe(true);
     expect(cases.some((item) => item.fixture === "fork" && item.suffix.some((command) =>
       command.kind === "merge" && command.branch === "main"))).toBe(true);
+  });
+});
+
+describe("M4 case generation", () => {
+  it("enumerates only successful transitions through depth three", () => {
+    const cases = generateValidSequences(3);
+    expect(cases.length).toBeGreaterThan(generateValidSequences(2).length);
+    expect(cases.every(({ commands }) => runEngine(commands).steps.every(({ result }) => result.ok))).toBe(true);
+    expect(cases.some(({ suffix }) => suffix.length === 3)).toBe(true);
+  });
+
+  it("replays the same seeded random cases and bounds length", () => {
+    const first = generateRandomSequences(100, 42);
+    expect(first).toEqual(generateRandomSequences(100, 42));
+    expect(first).not.toEqual(generateRandomSequences(100, 43));
+    expect(first.every(({ suffix, commands }) => suffix.length <= 20 &&
+      runEngine(commands).steps.every(({ result }) => result.ok))).toBe(true);
+  });
+
+  it("keeps deliberate invalid transitions out of valid suites", () => {
+    const cases = generateInvalidSequences();
+    expect(cases.length).toBeGreaterThan(0);
+    expect(cases.every(({ commands }) => runEngine(commands).steps.at(-1)?.result.ok === false)).toBe(true);
   });
 });

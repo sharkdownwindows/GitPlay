@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import type { Command, ErrorClass } from "../../src/core/types";
 import { isVerificationReport, type CoverageByCommand, type DiffTestSummary, type Divergence } from "../../src/verification/report";
 import { commandText, runEngine, type AbstractCommand } from "./adapter";
-import { ACTIONS, FIXTURES, generateSequences } from "./generate";
+import { ACTIONS, FIXTURES, generateSequences, generateValidSequences, generateRandomSequences, generateInvalidSequences, type DifferentialCase } from "./generate";
 import { normalizeEngine, normalizeReal } from "./normalize";
 import { gitVersion, isPinnedGit, runReal, type GitInvocation } from "./runReal";
 
@@ -97,9 +97,11 @@ export function runDifferential(
   depth: number,
   engine: (commands: readonly AbstractCommand[]) => EngineRun = runEngine,
   real: (commands: readonly AbstractCommand[]) => RealRun = runReal,
+  cases: DifferentialCase[] = generateSequences(depth),
+  randomCases = 0,
+  seed = 0,
 ): DifferentialResult {
   const start = performance.now();
-  const cases = generateSequences(depth);
   const coverage: CoverageByCommand = { commit: 0, branch: 0, switch: 0, checkout: 0, merge: 0 };
   const divergences: Divergence[] = [];
   const seen = new Set<string>();
@@ -137,7 +139,8 @@ export function runDifferential(
       catch (error) { actualState = `normalization error: ${String(error)}`; }
       if (command && actualStep && expectedStep) {
         const expectedClass = gitErrorClass(command, expectedStep);
-        if ((expectedStep.status === 0) !== actualStep.ok || expectedClass !== actualStep.errorClass) {
+        if ((expectedStep.status === 0) !== actualStep.ok || expectedClass !== actualStep.errorClass ||
+            (expectedStep.status !== 0 && expectedClass === undefined)) {
           caseHard = stepHard = true;
           record({ kind: "errorClass", severity: "hard", commands: prefix,
             expected: `status=${expectedStep.status}; class=${expectedClass ?? "unclassified"}; ${expectedStep.output}`,
@@ -159,7 +162,7 @@ export function runDifferential(
   }
   return {
     summary: { totalCases: cases.length, passed: cases.length - failed, failed, warnings,
-      exhaustiveDepth: depth, randomCases: 0, seed: 0, durationMs: performance.now() - start },
+      exhaustiveDepth: depth, randomCases, seed, durationMs: performance.now() - start },
     divergences, gitVersion: gitVersion(), sequences: cases.length, alphabetSize: ACTIONS.length,
     fixtures: FIXTURES.map(({ name, setup }) => ({ name, setupLength: setup.length })),
     commitSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), coverage,
@@ -183,9 +186,20 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const flag = process.argv.indexOf("--exhaustive");
   const depth = flag < 0 ? 2 : Number(process.argv[flag + 1]);
   if (!Number.isInteger(depth) || depth < 0) throw new Error("Invalid --exhaustive depth");
-  const result = runDifferential(depth);
+  const randomFlag = process.argv.indexOf("--random");
+  const randomCount = randomFlag < 0 ? 0 : Number(process.argv[randomFlag + 1]);
+  const seedFlag = process.argv.indexOf("--seed");
+  const seed = seedFlag < 0 ? 42 : Number(process.argv[seedFlag + 1]);
+  const cases = process.argv.includes("--invalid") ? generateInvalidSequences()
+    : randomFlag >= 0 ? generateRandomSequences(randomCount, seed)
+      : process.argv.includes("--valid") ? generateValidSequences(depth) : generateSequences(depth);
+  const result = runDifferential(randomFlag >= 0 || process.argv.includes("--invalid") ? 0 : depth,
+    runEngine, runReal, cases, randomFlag >= 0 ? randomCount : 0, randomFlag >= 0 ? seed : 0);
   console.log(`Git: ${result.gitVersion}${isPinnedGit(result.gitVersion) ? " (CI pin 2.43)" : " (local version differs from CI pin 2.43)"}`);
-  console.log(`Alphabet: ${result.alphabetSize}; fixtures: ${result.fixtures.map((fixture) => `${fixture.name}(${fixture.setupLength})`).join(", ")}; suffix depth: ${depth}`);
+  const mode = process.argv.includes("--invalid") ? "invalid" : randomFlag >= 0
+    ? `random seed ${seed}, max depth 20` : process.argv.includes("--valid")
+      ? `valid exhaustive depth ${depth}` : `mixed exhaustive depth ${depth}`;
+  console.log(`Alphabet: ${result.alphabetSize}; fixtures: ${result.fixtures.map((fixture) => `${fixture.name}(${fixture.setupLength})`).join(", ")}; mode: ${mode}`);
   console.log(`Sequences: ${result.sequences}; runtime: ${result.summary.durationMs.toFixed(0)} ms`);
   console.log(`Passed: ${result.summary.passed}; hard-failed cases: ${result.summary.failed}; distinct output warnings: ${result.summary.warnings}`);
   for (const divergence of result.divergences.filter((item) => item.severity === "hard")) {

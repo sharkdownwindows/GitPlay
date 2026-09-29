@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-29T14:51:08.205Z",
-  "commitSha": "a7aa37722b32e74af0c658bfb43dea6419e5c6e8",
+  "generatedAt": "2026-09-29T15:27:45.618Z",
+  "commitSha": "37eddcade0522c00866f1d8616f59d3eef64189c",
   "gitVersion": "git version 2.31.1.windows.1",
   "nodeVersion": "v24.16.0",
   "diffTest": {
-    "totalCases": 482,
-    "passed": 482,
+    "totalCases": 133,
+    "passed": 133,
     "failed": 0,
-    "warnings": 306,
+    "warnings": 50,
     "exhaustiveDepth": 2,
     "randomCases": 0,
-    "seed": 0,
-    "durationMs": 418894.5332
+    "seed": 42,
+    "durationMs": 157462.3551
   },
   "coverage": {
-    "commit": 271,
-    "branch": 325,
-    "switch": 349,
-    "checkout": 349,
-    "merge": 168
+    "commit": 120,
+    "branch": 116,
+    "switch": 116,
+    "checkout": 117,
+    "merge": 39
   },
   "scaling": [
     {
@@ -27,26 +27,26 @@
       "points": [
         {
           "n": 100,
-          "medianMs": 0.26289999997243285,
-          "p95Ms": 0.36549999995622784,
+          "medianMs": 0.19980000000214204,
+          "p95Ms": 0.42490000001271255,
           "iterations": 7
         },
         {
           "n": 1000,
-          "medianMs": 1.2815999999875203,
-          "p95Ms": 1.9835999999777414,
+          "medianMs": 1.4241000000038184,
+          "p95Ms": 1.5239000000001397,
           "iterations": 7
         },
         {
           "n": 10000,
-          "medianMs": 14.48519999999553,
-          "p95Ms": 21.009499999985565,
+          "medianMs": 16.518699999985984,
+          "p95Ms": 23.553100000019185,
           "iterations": 7
         },
         {
           "n": 100000,
-          "medianMs": 240.72539999999572,
-          "p95Ms": 251.61009999999078,
+          "medianMs": 256.02679999999236,
+          "p95Ms": 287.61960000000545,
           "iterations": 7
         }
       ]
@@ -60,7 +60,7 @@
       "commands": [
         "git commit --allow-empty -m C2"
       ],
-      "expected": "[main (root-commit) d1e1527] C2",
+      "expected": "[main (root-commit) ccfbe27] C2",
       "actual": "[main (root-commit) c1] C2"
     },
     {
@@ -68,1731 +68,68 @@
       "kind": "output",
       "severity": "soft",
       "commands": [
-        "git branch -- feature"
+        "git commit --allow-empty -m C2",
+        "git commit --allow-empty -m C3"
       ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
+      "expected": "[main c02bbf9] C3",
+      "actual": "[main c2] C3"
     },
     {
       "id": "d3",
       "kind": "output",
       "severity": "soft",
       "commands": [
-        "git branch -- --list"
+        "git commit --allow-empty -m C2",
+        "git checkout c1"
       ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
+      "expected": "Note: switching to 'fe71579b64908a49e729cc8cbb0071543d5b8fa7'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at fe71579 C2",
+      "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
       "id": "d4",
       "kind": "output",
       "severity": "soft",
       "commands": [
-        "git switch -- main"
+        "git branch",
+        "git commit --allow-empty -m C3"
       ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
+      "expected": "[main (root-commit) 9855297] C3",
+      "actual": "[main (root-commit) c1] C3"
     },
     {
       "id": "d5",
       "kind": "output",
       "severity": "soft",
       "commands": [
-        "git switch -- feature"
+        "git switch -c topic",
+        "git commit --allow-empty -m C3"
       ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
+      "expected": "[topic (root-commit) 480848d] C3",
+      "actual": "[topic (root-commit) c1] C3"
     },
     {
       "id": "d6",
       "kind": "output",
       "severity": "soft",
       "commands": [
-        "git switch -- --help"
+        "git checkout -b topic",
+        "git commit --allow-empty -m C3"
       ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
+      "expected": "[topic (root-commit) 67fc334] C3",
+      "actual": "[topic (root-commit) c1] C3"
     },
     {
       "id": "d7",
       "kind": "output",
       "severity": "soft",
       "commands": [
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d8",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d9",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d10",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d11",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main c5b77b3] C3",
-      "actual": "[main c2] C3"
-    },
-    {
-      "id": "d12",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d13",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d14",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d15",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git checkout c1"
-      ],
-      "expected": "Note: switching to '9224f145fbd28de3f8e7ac29fc66e68334cdf7e2'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 9224f14 C2",
-      "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
-    },
-    {
-      "id": "d16",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d17",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d18",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C2",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d19",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) a02a1ee] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d20",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d21",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d22",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d23",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d24",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d25",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d26",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d27",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d28",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- feature",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d29",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) 5c56feb] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d30",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d31",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d32",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d33",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d34",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d35",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d36",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d37",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d38",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d39",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) 0e49320] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d40",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d41",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d42",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d43",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d44",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d45",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d46",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d47",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d48",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git branch -- --list",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d49",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) f15c9e7] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d50",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d51",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d52",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d53",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d54",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d55",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d56",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d57",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d58",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- main",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d59",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) c4077e2] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d60",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d61",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d62",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d63",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d64",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d65",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d66",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d67",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d68",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- feature",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d69",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[topic (root-commit) db67050] C3",
-      "actual": "[topic (root-commit) c1] C3"
-    },
-    {
-      "id": "d70",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'topic'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d71",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d72",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d73",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d74",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d75",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d76",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d77",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d78",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -c topic",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d79",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) b5984c4] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d80",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d81",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d82",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d83",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d84",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d85",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d86",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d87",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d88",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git switch -- --help",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d89",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) f43037b] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d90",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d91",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d92",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d93",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d94",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d95",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d96",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d97",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d98",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d99",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) 55e2c13] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d100",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d101",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d102",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d103",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d104",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d105",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d106",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d107",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d108",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout c1",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d109",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[topic (root-commit) 6d80efa] C3",
-      "actual": "[topic (root-commit) c1] C3"
-    },
-    {
-      "id": "d110",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'topic'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d111",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d112",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d113",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d114",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d115",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d116",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d117",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d118",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout -b topic",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d119",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) 2afeb5f] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d120",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d121",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d122",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d123",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d124",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d125",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d126",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d127",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d128",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git checkout refs/heads/--help",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d129",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) 12220ee] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d130",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d131",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d132",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d133",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d134",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d135",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d136",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d137",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d138",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d139",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) 8665f61] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d140",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d141",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d142",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d143",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d144",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d145",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d146",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d147",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d148",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d149",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main (root-commit) c3654a7] C3",
-      "actual": "[main (root-commit) c1] C3"
-    },
-    {
-      "id": "d150",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: Not a valid object name: 'main'.",
-      "actual": "fatal: your current branch does not have any commits yet"
-    },
-    {
-      "id": "d151",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d152",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git switch -- main"
-      ],
-      "expected": "fatal: invalid reference: main",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d153",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git switch -- feature"
-      ],
-      "expected": "fatal: invalid reference: feature",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d154",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d155",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d156",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git merge -m \"Merge branch 'main'\" -- main"
-      ],
-      "expected": "merge: main - not something we can merge",
-      "actual": "error: pathspec 'main' did not match any file(s) known to git"
-    },
-    {
-      "id": "d157",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "merge: feature - not something we can merge",
-      "actual": "error: pathspec 'feature' did not match any file(s) known to git"
-    },
-    {
-      "id": "d158",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d159",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
         "git commit --allow-empty -m C0"
       ],
-      "expected": "[main (root-commit) 1358fe0] C0",
+      "expected": "[main (root-commit) 58d2f51] C0",
       "actual": "[main (root-commit) c1] C0"
     },
     {
-      "id": "d160",
+      "id": "d8",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -1801,11 +138,11 @@
         "git switch -- feature",
         "git commit --allow-empty -m C1"
       ],
-      "expected": "[feature d8e8a4d] C1",
+      "expected": "[feature 2bc8ad6] C1",
       "actual": "[feature c2] C1"
     },
     {
-      "id": "d161",
+      "id": "d9",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -1816,26 +153,11 @@
         "git checkout main",
         "git commit --allow-empty -m C2"
       ],
-      "expected": "[main c32f589] C2",
+      "expected": "[main bf8a419] C2",
       "actual": "[main c3] C2"
     },
     {
-      "id": "d162",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d163",
+      "id": "d10",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -1850,37 +172,7 @@
       "actual": "  feature\n* main"
     },
     {
-      "id": "d164",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d165",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d166",
+      "id": "d11",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -1891,26 +183,11 @@
         "git checkout main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '5ca49f09adb346d52d84e55d13eb67e6dfd1dda0'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 5ca49f0 C0",
+      "expected": "Note: switching to '88f99443c61ad4f1096224612f0c6a58da637b0d'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 88f9944 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d167",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d168",
+      "id": "d12",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -1921,26 +198,11 @@
         "git checkout main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating e0ddf26..b1a0bd6\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating b8555c5..716f188\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d169",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d170",
+      "id": "d13",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -1952,27 +214,11 @@
         "git commit --allow-empty -m C2",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main f3c9dc1] C3",
+      "expected": "[main 2e899a5] C3",
       "actual": "[main c4] C3"
     },
     {
-      "id": "d171",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git commit --allow-empty -m C2",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d172",
+      "id": "d14",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -1988,39 +234,7 @@
       "actual": "  feature\n* main"
     },
     {
-      "id": "d173",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git commit --allow-empty -m C2",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d174",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git commit --allow-empty -m C2",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d175",
+      "id": "d15",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2032,27 +246,11 @@
         "git commit --allow-empty -m C2",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '4a95fa94e66876962e67c5192bc55173af57d7fc'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 4a95fa9 C0",
+      "expected": "Note: switching to '94094a53ccb79ca9cda0d652c3c69b32476aefed'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 94094a5 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d176",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git commit --allow-empty -m C2",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d177",
+      "id": "d16",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2068,167 +266,7 @@
       "actual": "Merge made by the 'ort' strategy.\n[c4] Merge branch 'feature'"
     },
     {
-      "id": "d178",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git commit --allow-empty -m C2",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d179",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main be7bdb0] C3",
-      "actual": "[main c3] C3"
-    },
-    {
-      "id": "d180",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d181",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git branch"
-      ],
-      "expected": "feature\n* main",
-      "actual": "  feature\n* main"
-    },
-    {
-      "id": "d182",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d183",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d184",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git checkout c1"
-      ],
-      "expected": "Note: switching to '92c500caad005fe30aafdec7c3ee8d8808b76d19'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 92c500c C0",
-      "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
-    },
-    {
-      "id": "d185",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d186",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "Updating 3b003f2..2811d82\nFast-forward (no commit created; -m option ignored)",
-      "actual": "Updating c1..c2\nFast-forward"
-    },
-    {
-      "id": "d187",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- feature",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d188",
+      "id": "d17",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2240,27 +278,11 @@
         "git branch",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 9cae34f] C3",
+      "expected": "[main b8810cd] C3",
       "actual": "[main c3] C3"
     },
     {
-      "id": "d189",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d190",
+      "id": "d18",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2276,39 +298,7 @@
       "actual": "  feature\n* main"
     },
     {
-      "id": "d191",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d192",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d193",
+      "id": "d19",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2320,27 +310,11 @@
         "git branch",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'aef1778053f8a1002d9e45c68f7a549dac16b6ae'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at aef1778 C0",
+      "expected": "Note: switching to '8da7d559d6f47216c7d66803891fb946fc197741'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 8da7d55 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d194",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d195",
+      "id": "d20",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2352,171 +326,11 @@
         "git branch",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 8a6ddca..38da11f\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 5bcb4ab..50355bb\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d196",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d197",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main ab300fb] C3",
-      "actual": "[main c3] C3"
-    },
-    {
-      "id": "d198",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d199",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git branch"
-      ],
-      "expected": "feature\n* main",
-      "actual": "  feature\n* main"
-    },
-    {
-      "id": "d200",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d201",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d202",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git checkout c1"
-      ],
-      "expected": "Note: switching to 'cfd1b5ecfe2bd8a4be69e898a1b28163dc33586b'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at cfd1b5e C0",
-      "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
-    },
-    {
-      "id": "d203",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d204",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "Updating 10e16d1..e156c42\nFast-forward (no commit created; -m option ignored)",
-      "actual": "Updating c1..c2\nFast-forward"
-    },
-    {
-      "id": "d205",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git branch -- --list",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d206",
+      "id": "d21",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2528,27 +342,11 @@
         "git switch -- main",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 280cee8] C3",
+      "expected": "[main 672eede] C3",
       "actual": "[main c3] C3"
     },
     {
-      "id": "d207",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- main",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d208",
+      "id": "d22",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2564,39 +362,7 @@
       "actual": "  feature\n* main"
     },
     {
-      "id": "d209",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- main",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d210",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- main",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d211",
+      "id": "d23",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2608,27 +374,11 @@
         "git switch -- main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'cf267f96450949f32997f0dccf855b9109d115b2'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at cf267f9 C0",
+      "expected": "Note: switching to '41a513fafffb6ca5f883901646ccf4829fbe9fb4'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 41a513f C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d212",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- main",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d213",
+      "id": "d24",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2640,27 +390,11 @@
         "git switch -- main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating f50fce5..6960934\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 066eeb8..09f481d\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d214",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- main",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d215",
+      "id": "d25",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2672,59 +406,11 @@
         "git switch -- feature",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[feature fd89aac] C3",
+      "expected": "[feature c0080b5] C3",
       "actual": "[feature c3] C3"
     },
     {
-      "id": "d216",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- feature",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d217",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- feature",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d218",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- feature",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d219",
+      "id": "d26",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2736,43 +422,11 @@
         "git switch -- feature",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '199669f414338cab72c0da3cd3aa85547b84be2b'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 199669f C0",
+      "expected": "Note: switching to '5576b7fc4eef86e68088944e7e6dd71a8b1f6a71'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 5576b7f C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d220",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- feature",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d221",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- feature",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d222",
+      "id": "d27",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2784,27 +438,11 @@
         "git switch -c topic",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[topic 9740e6e] C3",
+      "expected": "[topic 97315bb] C3",
       "actual": "[topic c3] C3"
     },
     {
-      "id": "d223",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -c topic",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d224",
+      "id": "d28",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2820,55 +458,7 @@
       "actual": "  feature\n  main\n* topic"
     },
     {
-      "id": "d225",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -c topic",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d226",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -c topic",
-        "git switch -c topic"
-      ],
-      "expected": "fatal: A branch named 'topic' already exists.",
-      "actual": "fatal: a branch named 'topic' already exists"
-    },
-    {
-      "id": "d227",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -c topic",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d228",
+      "id": "d29",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2880,43 +470,11 @@
         "git switch -c topic",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '92a5bb6036f0dbc56356a485f459fe7deccea921'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 92a5bb6 C0",
+      "expected": "Note: switching to 'd590e85b9100d37657c990e2b47e43c31f714ed7'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at d590e85 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d229",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -c topic",
-        "git checkout -b topic"
-      ],
-      "expected": "fatal: A branch named 'topic' already exists.",
-      "actual": "fatal: a branch named 'topic' already exists"
-    },
-    {
-      "id": "d230",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -c topic",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d231",
+      "id": "d30",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -2928,171 +486,11 @@
         "git switch -c topic",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating a61dc7b..9b2f543\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 4a94f31..a9f804d\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d232",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -c topic",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d233",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main f988a5a] C3",
-      "actual": "[main c3] C3"
-    },
-    {
-      "id": "d234",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d235",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git branch"
-      ],
-      "expected": "feature\n* main",
-      "actual": "  feature\n* main"
-    },
-    {
-      "id": "d236",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d237",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d238",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git checkout c1"
-      ],
-      "expected": "Note: switching to '9e45c391eb793e47837c53ad9ca7af81795d9dcc'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 9e45c39 C0",
-      "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
-    },
-    {
-      "id": "d239",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d240",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "Updating 142cc01..26c8239\nFast-forward (no commit created; -m option ignored)",
-      "actual": "Updating c1..c2\nFast-forward"
-    },
-    {
-      "id": "d241",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git switch -- --help",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d242",
+      "id": "d31",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3104,27 +502,11 @@
         "git checkout main",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 9ca89b9] C3",
+      "expected": "[main 3e75ee5] C3",
       "actual": "[main c3] C3"
     },
     {
-      "id": "d243",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout main",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d244",
+      "id": "d32",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3140,39 +522,7 @@
       "actual": "  feature\n* main"
     },
     {
-      "id": "d245",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout main",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d246",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout main",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d247",
+      "id": "d33",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3184,27 +534,11 @@
         "git checkout main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'ae63e1e205afefb898057f3de0b8b7e6437b98ff'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at ae63e1e C0",
+      "expected": "Note: switching to '4707e86e5f0ac1d2490b8f9e2070edcd4a68a93a'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 4707e86 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d248",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout main",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d249",
+      "id": "d34",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3216,27 +550,11 @@
         "git checkout main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 4e7f57b..e66c72f\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 9060d43..247b028\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d250",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d251",
+      "id": "d35",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3248,27 +566,11 @@
         "git checkout c1",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[detached HEAD b20d412] C3",
+      "expected": "[detached HEAD b18997b] C3",
       "actual": "[detached HEAD c3] C3"
     },
     {
-      "id": "d252",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout c1",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d253",
+      "id": "d36",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3280,27 +582,11 @@
         "git checkout c1",
         "git branch"
       ],
-      "expected": "* (HEAD detached at 7a0f1ae)\n  feature\n  main",
+      "expected": "* (HEAD detached at b30d5df)\n  feature\n  main",
       "actual": "  feature\n  main"
     },
     {
-      "id": "d254",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout c1",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d255",
+      "id": "d37",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3312,27 +598,11 @@
         "git checkout c1",
         "git switch -- feature"
       ],
-      "expected": "Previous HEAD position was 02847c1 C0\nSwitched to branch 'feature'",
+      "expected": "Previous HEAD position was 867fe10 C0\nSwitched to branch 'feature'",
       "actual": "Switched to branch 'feature'"
     },
     {
-      "id": "d256",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout c1",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d257",
+      "id": "d38",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3344,27 +614,11 @@
         "git checkout c1",
         "git checkout c1"
       ],
-      "expected": "HEAD is now at 0cbe89e C0",
+      "expected": "HEAD is now at 0bbffa2 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d258",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout c1",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d259",
+      "id": "d39",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3376,27 +630,11 @@
         "git checkout c1",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating 7eac79d..a2402b0\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 62125c3..2c160c1\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d260",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout c1",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d261",
+      "id": "d40",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3408,27 +646,11 @@
         "git checkout -b topic",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[topic c912a2c] C3",
+      "expected": "[topic d612e84] C3",
       "actual": "[topic c3] C3"
     },
     {
-      "id": "d262",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout -b topic",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d263",
+      "id": "d41",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3444,55 +666,7 @@
       "actual": "  feature\n  main\n* topic"
     },
     {
-      "id": "d264",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout -b topic",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d265",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout -b topic",
-        "git switch -c topic"
-      ],
-      "expected": "fatal: A branch named 'topic' already exists.",
-      "actual": "fatal: a branch named 'topic' already exists"
-    },
-    {
-      "id": "d266",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout -b topic",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d267",
+      "id": "d42",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3504,43 +678,11 @@
         "git checkout -b topic",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'ed82dadf78fcca390f32c4ab92927f2220ab7cd8'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at ed82dad C0",
+      "expected": "Note: switching to '4c5f00aa105a2f76c4f1e43b85f04431d0bb5947'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 4c5f00a C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d268",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout -b topic",
-        "git checkout -b topic"
-      ],
-      "expected": "fatal: A branch named 'topic' already exists.",
-      "actual": "fatal: a branch named 'topic' already exists"
-    },
-    {
-      "id": "d269",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout -b topic",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d270",
+      "id": "d43",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3552,171 +694,11 @@
         "git checkout -b topic",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating e6a8377..d573fb3\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 808a5e7..4b0108c\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d271",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout -b topic",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d272",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main c81d3c9] C3",
-      "actual": "[main c3] C3"
-    },
-    {
-      "id": "d273",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d274",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git branch"
-      ],
-      "expected": "feature\n* main",
-      "actual": "  feature\n* main"
-    },
-    {
-      "id": "d275",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d276",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d277",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git checkout c1"
-      ],
-      "expected": "Note: switching to 'bd7bc068acb49a226346380718957310d93ec40f'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at bd7bc06 C0",
-      "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
-    },
-    {
-      "id": "d278",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d279",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "Updating c877de6..812f9fe\nFast-forward (no commit created; -m option ignored)",
-      "actual": "Updating c1..c2\nFast-forward"
-    },
-    {
-      "id": "d280",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git checkout refs/heads/--help",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d281",
+      "id": "d44",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3728,27 +710,11 @@
         "git merge -m \"Merge branch 'main'\" -- main",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main 336dd6a] C3",
+      "expected": "[main 292ad19] C3",
       "actual": "[main c3] C3"
     },
     {
-      "id": "d282",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d283",
+      "id": "d45",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3764,39 +730,7 @@
       "actual": "  feature\n* main"
     },
     {
-      "id": "d284",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d285",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d286",
+      "id": "d46",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3808,27 +742,11 @@
         "git merge -m \"Merge branch 'main'\" -- main",
         "git checkout c1"
       ],
-      "expected": "Note: switching to '9527a469ab2e4cb52de1cf7e47d4c4b55a1044ca'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 9527a46 C0",
+      "expected": "Note: switching to 'e2fd7e3809cf450518a9ee24ab26c055853de4a3'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at e2fd7e3 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
     },
     {
-      "id": "d287",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d288",
+      "id": "d47",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3840,27 +758,11 @@
         "git merge -m \"Merge branch 'main'\" -- main",
         "git merge -m \"Merge branch 'feature'\" -- feature"
       ],
-      "expected": "Updating b452858..673520e\nFast-forward (no commit created; -m option ignored)",
+      "expected": "Updating 5a8b9c1..f43dcfc\nFast-forward (no commit created; -m option ignored)",
       "actual": "Updating c1..c2\nFast-forward"
     },
     {
-      "id": "d289",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'main'\" -- main",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d290",
+      "id": "d48",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3872,27 +774,11 @@
         "git merge -m \"Merge branch 'feature'\" -- feature",
         "git commit --allow-empty -m C3"
       ],
-      "expected": "[main dc2c8f3] C3",
+      "expected": "[main eca89e9] C3",
       "actual": "[main c3] C3"
     },
     {
-      "id": "d291",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d292",
+      "id": "d49",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3908,39 +794,7 @@
       "actual": "  feature\n* main"
     },
     {
-      "id": "d293",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d294",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d295",
+      "id": "d50",
       "kind": "output",
       "severity": "soft",
       "commands": [
@@ -3952,184 +806,8 @@
         "git merge -m \"Merge branch 'feature'\" -- feature",
         "git checkout c1"
       ],
-      "expected": "Note: switching to 'e1a3844c2e4bb9dbf3badb5ef9ff6b2f1b34bb52'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at e1a3844 C0",
+      "expected": "Note: switching to '46cb5c64c3bcb02b1314adb5100e765197e19588'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 46cb5c6 C0",
       "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
-    },
-    {
-      "id": "d296",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d297",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'feature'\" -- feature",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
-    },
-    {
-      "id": "d298",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git commit --allow-empty -m C3"
-      ],
-      "expected": "[main 40f0910] C3",
-      "actual": "[main c3] C3"
-    },
-    {
-      "id": "d299",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git branch -- feature"
-      ],
-      "expected": "fatal: A branch named 'feature' already exists.",
-      "actual": "fatal: a branch named 'feature' already exists"
-    },
-    {
-      "id": "d300",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git branch"
-      ],
-      "expected": "feature\n* main",
-      "actual": "  feature\n* main"
-    },
-    {
-      "id": "d301",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git branch -- --list"
-      ],
-      "expected": "fatal: '--list' is not a valid branch name.",
-      "actual": "fatal: invalid reference name"
-    },
-    {
-      "id": "d302",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git switch -- --help"
-      ],
-      "expected": "fatal: invalid reference: --help",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d303",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git checkout c1"
-      ],
-      "expected": "Note: switching to '0cb8281c07318eaf8a616acc72fee6b04dbe1fb8'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 0cb8281 C0",
-      "actual": "Note: switching to 'c1'.\nYou are in 'detached HEAD' state."
-    },
-    {
-      "id": "d304",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git checkout refs/heads/--help"
-      ],
-      "expected": "error: pathspec 'refs/heads/--help' did not match any file(s) known to git",
-      "actual": "error: pathspec '--help' did not match any file(s) known to git"
-    },
-    {
-      "id": "d305",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git merge -m \"Merge branch 'feature'\" -- feature"
-      ],
-      "expected": "Updating 8ca4c8e..ac85d58\nFast-forward (no commit created; -m option ignored)",
-      "actual": "Updating c1..c2\nFast-forward"
-    },
-    {
-      "id": "d306",
-      "kind": "output",
-      "severity": "soft",
-      "commands": [
-        "git commit --allow-empty -m C0",
-        "git branch -- feature",
-        "git switch -- feature",
-        "git commit --allow-empty -m C1",
-        "git checkout main",
-        "git merge -m \"Merge branch 'missing'\" -- missing",
-        "git merge -m \"Merge branch 'missing'\" -- missing"
-      ],
-      "expected": "merge: missing - not something we can merge",
-      "actual": "error: pathspec 'missing' did not match any file(s) known to git"
     }
   ]
 }
