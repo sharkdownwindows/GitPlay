@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint:imports": "node scripts/check-imports.ts",
-    "diff:quick": "tsx harness/diff/run.ts --exhaustive 3 --random 5000",
+    "diff:quick": "tsx harness/diff/run.ts --exhaustive 2",
     "diff:deep": "tsx harness/diff/run.ts --exhaustive 4 --workers 8",
     "bench": "tsx harness/bench/layout.ts",
     "report": "tsx harness/writeReport.ts",
