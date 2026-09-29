@@ -1,8 +1,9 @@
 import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import type { Command, ErrorClass } from "../../src/core/types";
-import type { DiffTestSummary, Divergence } from "../../src/verification/report";
+import { isVerificationReport, type CoverageByCommand, type DiffTestSummary, type Divergence } from "../../src/verification/report";
 import { commandText, runEngine, type AbstractCommand } from "./adapter";
 import { ACTIONS, FIXTURES, generateSequences } from "./generate";
 import { normalizeEngine, normalizeReal } from "./normalize";
@@ -40,41 +41,55 @@ export interface DifferentialResult {
   sequences: number;
   alphabetSize: number;
   fixtures: { name: string; setupLength: number }[];
+  commitSha: string;
+  coverage: CoverageByCommand;
 }
 
 export function formatDivergenceLog(result: DifferentialResult): string {
+  const hard = result.divergences.filter((item) => item.severity === "hard");
+  const soft = result.divergences.filter((item) => item.severity === "soft");
   const lines = [
     "# Differential divergence log", "",
-    "## Execution policy", "",
-    "Execution policy: depth 2 on every pull request; depth 3 nightly for now. Nightly automation is not configured yet. The local Git process spike measured a 29.21 ms mean.",
-    `This corrected local depth-2 run took ${(result.summary.durationMs / 1000).toFixed(1)} seconds. Revisit the policy after the first GitHub CI run using Git 2.43.`, "",
-    `Observed with ${result.gitVersion}; fixed alphabet ${result.alphabetSize}; seed ${result.summary.seed}; exhaustive suffix depth ${result.summary.exhaustiveDepth}.`,
-    `Fixtures: ${result.fixtures.map((fixture) => `${fixture.name} (setup ${fixture.setupLength})`).join(", ")}. Setup commands do not count toward suffix depth.`,
-    `Cases: ${result.sequences}; hard-failed cases: ${result.summary.failed}; distinct output warnings: ${result.summary.warnings}.`, "",
-    "Divergences are deduplicated by kind and minimal failing command prefix. Hard failures remain correctness defects.",
-    "Reproduce sequences through the typed harness adapter: synthetic cN commit targets are resolved to real Git hashes before invocation.",
-    "Soft warnings are accepted output-format differences; no code fix is required under the accepted contract.", "",
-    "The alphabet covers typed Tier 1 commands. Parser-only classes (NotGitCommand, UnknownSubcommand, MissingArgument), NothingToCommit, AlreadyOnBranch, BranchNotFullyMerged and UnknownCommand are outside this CLI gate.", "",
+    "## Run metadata", "",
+    `Commit SHA: ${result.commitSha}`,
+    `Git version: ${result.gitVersion}`,
+    `Seed: ${result.summary.seed}`,
+    `Exhaustive depth: ${result.summary.exhaustiveDepth}`,
+    `Cases: ${result.sequences}`,
+    `Hard failures: ${result.summary.failed}`,
+    `Output warnings: ${result.summary.warnings}`,
+    `Alphabet size: ${result.alphabetSize}`,
+    `Fixtures: ${result.fixtures.map((fixture) => `${fixture.name} (setup ${fixture.setupLength})`).join(", ")}`, "",
+    "Setup commands do not count toward exhaustive depth. Output warnings are a soft gate.", "",
+    "## Hard divergences", "",
   ];
-  if (result.divergences.length === 0) lines.push("No divergences have been observed yet.", "");
-  for (const divergence of result.divergences) {
+  if (hard.length === 0) lines.push("No hard divergences observed; no harness-detected hard divergence has a verified fixing commit.", "");
+  for (const divergence of hard) {
     lines.push(
-      `## ${divergence.id} — ${divergence.kind} (${divergence.severity})`, "",
-      "Command sequence:", "```text", ...divergence.commands, "```", "",
+      `### ${divergence.id} — ${divergence.kind}`, "",
+      "Minimal command sequence:", "```text", ...divergence.commands, "```", "",
       "Expected (Git):", "```text", divergence.expected, "```", "",
       "Actual (GitScope):", "```text", divergence.actual, "```", "",
-      divergence.severity === "soft"
-        ? "Cause: not established; accepted output-only difference."
-        : "Cause: not established; requires investigation.", "",
-      divergence.severity === "soft"
-        ? "Fixing commit: None; no code fix is required under the accepted contract."
-        : "Fixing commit: Pending.", "",
+      "Root-cause status: Pending investigation.", "",
+      "Fixing commit: Pending.", "",
     );
   }
-  lines.push("## Entry template", "", "Command sequence:", "```text", "git ...", "```", "",
-    "Expected (Git):", "```text", "...", "```", "",
-    "Actual (GitScope):", "```text", "...", "```", "",
-    "Cause: To be established from a reproduction.", "", "Fixing commit: Pending.", "");
+  lines.push("## Soft output differences", "");
+  if (soft.length === 0) lines.push("No output warnings observed.", "");
+  const groups = new Map<string, Divergence[]>();
+  for (const item of soft) {
+    const command = item.commands.at(-1) ?? "unknown";
+    const kind = command.match(/^git (\S+)/)?.[1] ?? "unknown";
+    groups.set(kind, [...(groups.get(kind) ?? []), item]);
+  }
+  for (const [kind, items] of [...groups].sort(([a], [b]) => a.localeCompare(b))) {
+    const sample = items[0]!;
+    lines.push(`### ${kind} (${items.length} warnings)`, "",
+      "Representative command sequence:", "```text", ...sample.commands, "```", "",
+      "Expected (Git):", "```text", sample.expected, "```", "",
+      "Actual (GitScope):", "```text", sample.actual, "```", "",
+      "Grouped by the command producing the output difference; other wording may differ within this group.", "");
+  }
   return lines.join("\n");
 }
 
@@ -85,6 +100,7 @@ export function runDifferential(
 ): DifferentialResult {
   const start = performance.now();
   const cases = generateSequences(depth);
+  const coverage: CoverageByCommand = { commit: 0, branch: 0, switch: 0, checkout: 0, merge: 0 };
   const divergences: Divergence[] = [];
   const seen = new Set<string>();
   let failed = 0;
@@ -97,6 +113,7 @@ export function runDifferential(
     if (entry.severity === "soft") warnings++;
   };
   for (const testCase of cases) {
+    for (const kind of new Set(testCase.commands.map((command) => command.kind))) coverage[kind]++;
     const actual = engine(testCase.commands);
     const expected = real(testCase.commands);
     if (actual.steps.length !== testCase.commands.length || expected.steps.length !== testCase.commands.length) {
@@ -145,10 +162,24 @@ export function runDifferential(
       exhaustiveDepth: depth, randomCases: 0, seed: 0, durationMs: performance.now() - start },
     divergences, gitVersion: gitVersion(), sequences: cases.length, alphabetSize: ACTIONS.length,
     fixtures: FIXTURES.map(({ name, setup }) => ({ name, setupLength: setup.length })),
+    commitSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), coverage,
   };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  if (process.argv.includes("--from-report")) {
+    const report: unknown = JSON.parse(readFileSync("public/verification.json", "utf8"));
+    if (!isVerificationReport(report)) throw new Error("Invalid verification report");
+    const result: DifferentialResult = {
+      summary: report.diffTest, divergences: report.divergences, gitVersion: report.gitVersion,
+      sequences: report.diffTest.totalCases, alphabetSize: ACTIONS.length,
+      fixtures: FIXTURES.map(({ name, setup }) => ({ name, setupLength: setup.length })),
+      commitSha: report.commitSha, coverage: report.coverage,
+    };
+    writeFileSync("docs/divergences.md", formatDivergenceLog(result));
+    console.log(`Wrote divergence log from ${result.sequences} measured cases`);
+    process.exit(0);
+  }
   const flag = process.argv.indexOf("--exhaustive");
   const depth = flag < 0 ? 2 : Number(process.argv[flag + 1]);
   if (!Number.isInteger(depth) || depth < 0) throw new Error("Invalid --exhaustive depth");
@@ -157,7 +188,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   console.log(`Alphabet: ${result.alphabetSize}; fixtures: ${result.fixtures.map((fixture) => `${fixture.name}(${fixture.setupLength})`).join(", ")}; suffix depth: ${depth}`);
   console.log(`Sequences: ${result.sequences}; runtime: ${result.summary.durationMs.toFixed(0)} ms`);
   console.log(`Passed: ${result.summary.passed}; hard-failed cases: ${result.summary.failed}; distinct output warnings: ${result.summary.warnings}`);
-  for (const divergence of result.divergences) console.log(JSON.stringify(divergence));
+  for (const divergence of result.divergences.filter((item) => item.severity === "hard")) {
+    console.log(JSON.stringify(divergence));
+  }
   if (process.argv.includes("--write-log")) writeFileSync("docs/divergences.md", formatDivergenceLog(result));
   if (result.summary.failed > 0) process.exitCode = 1;
 }

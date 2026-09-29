@@ -23,7 +23,7 @@ describe("verification report loading", () => {
     expect(html).toContain(fixture.gitVersion);
     expect(html).toContain(fixture.nodeVersion);
     expect(html).toContain(fixture.generatedAt);
-    expect(html).toContain("Sample report");
+    expect(html).not.toContain("Sample report");
   });
 
   it.each([
@@ -61,14 +61,18 @@ describe("verification presentation", () => {
     expect(html).toContain("branch</span>: 3");
   });
 
-  it("does not plot sample scaling placeholders as measurements", () => {
-    const html = render(createElement(ScalingChart, { series: report.scaling }));
-    expect(html).toContain("No measured scaling data available.");
-    expect(html).not.toContain("<circle");
+  it("plots measured scaling data", () => {
+    const html = render(createElement(ScalingChart, { series: [{ label: "layout()", points: [
+      { n: 100, medianMs: 1, p95Ms: 2, iterations: 7 },
+      { n: 100000, medianMs: 100, p95Ms: 120, iterations: 7 },
+    ] }] }));
+    expect(html).toContain("<circle");
+    expect(html).toContain("100000");
   });
 
   it("shows no divergences or the actual divergence list", () => {
-    expect(render(createElement(VerificationContent, { report }))).toContain("No divergences recorded.");
+    expect(render(createElement(VerificationContent, { report: { ...report, divergences: [] } })))
+      .toContain("No divergences recorded.");
     const withDivergence: VerificationReport = {
       ...report,
       divergences: [{
