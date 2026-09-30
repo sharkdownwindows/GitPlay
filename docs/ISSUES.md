@@ -132,17 +132,17 @@ Demo: ngày 21. Feature freeze: ngày 15, không thương lượng.
 
 Quy tắc: quyết định bằng trạng thái CI ở thời điểm họp, không bằng lời hứa "mai xong".
 
-| # | Issue | Chủ | Chặn bởi | AC | Ưu tiên | Giờ |
-|---|---|---|---|---|---|---|
-| 43 | Vét cạn độ sâu 3 + random có seed 5000 chuỗi | D5 | ⛔35 | Pass 100% vét cạn; ≥99.9% random; seed ghi trong report | P0 | 3 |
-| 44 | Fuzzing **lệnh sai**: so `ErrorClass` (hard gate) + chuỗi (soft) | D5 | ⛔30,35 | Hard gate xanh; sai lệch chuỗi được báo cáo, không fail build | P0 | 4 |
-| 45 | `harness/writeReport.ts` → `public/verification.json` thật | D5 | ⛔43 | File có `generatedAt`, `commitSha`, `gitVersion`, số liệu thật | P0 | 2 |
-| 46 | `nightly.yml`: diff-test sâu + benchmark, commit lại report | D5 | ⛔45 | Chạy được thủ công bằng workflow_dispatch | P0 | 2 |
-| 47 | `DiffTestSummary` render dữ liệu thật + hiển thị timestamp/SHA | D6 | ⛔45 | Tab Verification không còn dữ liệu giả ở bất kỳ chỗ nào | P0 | 3 |
-| 48 | Level 05–08 (recover detached, fast-forward, merge commit, ff vs no-ff) | D4 | ⛔38 | Mỗi level giải được và có mô tả mục tiêu rõ ràng | P0 | 5 |
-| 49 | Đo p95 frame time tại n = 200 bằng `PerformanceObserver` | D2 | ⛔36 | Có số thật; nếu > 16.7 ms thì mở issue tối ưu kèm số đo | P0 | 2 |
-| 50 | Đo ngưỡng bão hòa render DOM, n = 10²…10⁴ | D6 | ⛔36 | Xác định được điểm gãy; tách biểu đồ khỏi biểu đồ layout headless | P1 | 3 |
-| 51 | `LevelList` + hiển thị tiến độ từ localStorage | D4 | ⛔21 | Hoàn thành level rồi reload vẫn thấy đánh dấu | P0 | 2 |
+| # | Issue | Chủ | Chặn bởi | AC | Ưu tiên | Giờ | Trạng thái |
+|---|---|---|---|---|---|---|---|
+| 43 | Vét cạn độ sâu 3 + random có seed 5000 chuỗi | D5 | ⛔35 | Pass 100% vét cạn; ≥99.9% random; seed ghi trong report | P0 | 3 | ✅ Complete |
+| 44 | Fuzzing **lệnh sai**: so `ErrorClass` (hard gate) + chuỗi (soft) | D5 | ⛔30,35 | Hard gate xanh; sai lệch chuỗi được báo cáo, không fail build | P0 | 4 | ✅ Complete |
+| 45 | `harness/writeReport.ts` → `public/verification.json` thật | D5 | ⛔43 | File có `generatedAt`, `commitSha`, `gitVersion`, số liệu thật | P0 | 2 | ✅ Complete |
+| 46 | `nightly.yml`: diff-test sâu + benchmark, commit lại report | D5 | ⛔45 | Chạy được thủ công bằng workflow_dispatch | P0 | 2 | ✅ Complete |
+| 47 | `DiffTestSummary` render dữ liệu thật + hiển thị timestamp/SHA | D6 | ⛔45 | Tab Verification không còn dữ liệu giả ở bất kỳ chỗ nào | P0 | 3 | ✅ Complete |
+| 48 | Level 05–08 (recover detached, fast-forward, merge commit, ff vs no-ff) | D4 | ⛔38 | Mỗi level giải được và có mô tả mục tiêu rõ ràng | P0 | 5 | ✅ Complete |
+| 49 | Đo p95 frame time tại n = 200 bằng `PerformanceObserver` | D2 | ⛔36 | Lấy timestamp từ callback `requestAnimationFrame` trong animation 199→200 commit, tính p95 frame interval và lưu mẫu thô; nếu > 16.7 ms thì mở issue tối ưu kèm số đo | P0 | 2 | ✅ Complete |
+| 50 | Đo ngưỡng bão hòa render DOM, n = 10²…10⁴ | D6 | ⛔36 | Xác định được điểm gãy; tách biểu đồ khỏi biểu đồ layout headless | P1 | 3 | ✅ Complete |
+| 51 | `LevelList` + hiển thị tiến độ từ localStorage | D4 | ⛔21 | Hoàn thành level rồi reload vẫn thấy đánh dấu | P0 | 2 | ✅ Complete |
 
 ---
 
