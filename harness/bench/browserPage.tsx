@@ -9,6 +9,11 @@ const params = new URLSearchParams(location.search);
 const n = Number(params.get("n"));
 const mode = params.get("mode");
 const seed = 42;
+const renderWarmups = Number(params.get("renderWarmups") ?? 1);
+const renderIterations = Number(params.get("renderIterations") ?? 5);
+const frameWarmups = Number(params.get("frameWarmups") ?? 2);
+const animationRuns = Number(params.get("animationRuns") ?? 10);
+const animationMs = Number(params.get("animationMs") ?? 350);
 const root = createRoot(document.getElementById("root")!);
 const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 const afterPaint = async () => { await nextFrame(); await nextFrame(); };
@@ -17,7 +22,7 @@ async function measureRender(): Promise<{ render: number[]; layout: number[] }> 
   const state = generateSyntheticDag(n, seed);
   const render: number[] = [];
   const layouts: number[] = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < renderWarmups + renderIterations; i++) {
     flushSync(() => root.render(null));
     const layoutStart = performance.now();
     layout(state);
@@ -25,7 +30,7 @@ async function measureRender(): Promise<{ render: number[]; layout: number[] }> 
     const start = performance.now();
     flushSync(() => root.render(createElement(GraphView, { state })));
     await afterPaint();
-    if (i > 0) { render.push(performance.now() - start); layouts.push(layoutMs); }
+    if (i >= renderWarmups) { render.push(performance.now() - start); layouts.push(layoutMs); }
   }
   return { render, layout: layouts };
 }
@@ -35,7 +40,7 @@ async function measureFrames(): Promise<{ frame: number[]; layout: number[] }> {
   const after = generateSyntheticDag(n, seed);
   const frames: number[] = [];
   const layouts: number[] = [];
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < frameWarmups + animationRuns; i++) {
     flushSync(() => root.render(createElement(GraphView, { state: before })));
     await afterPaint();
     const layoutStart = performance.now();
@@ -45,14 +50,14 @@ async function measureFrames(): Promise<{ frame: number[]; layout: number[] }> {
     const samples: number[] = [];
     const start = performance.now();
     flushSync(() => root.render(createElement(GraphView, { state: after })));
-    while (performance.now() - start < 350) {
+    while (performance.now() - start < animationMs) {
       await new Promise<void>((resolve) => requestAnimationFrame((time) => {
         samples.push(time - last);
         last = time;
         resolve();
       }));
     }
-    if (i >= 2) { frames.push(...samples); layouts.push(layoutMs); }
+    if (i >= frameWarmups) { frames.push(...samples); layouts.push(layoutMs); }
   }
   return { frame: frames, layout: layouts };
 }

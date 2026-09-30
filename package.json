@@ -16,6 +16,7 @@
     "diff:deep": "tsx harness/diff/run.ts --valid --exhaustive 4",
     "bench": "tsx harness/bench/layout.ts",
     "bench:browser": "tsx harness/bench/browser.ts",
+    "bench:browser:smoke": "tsx harness/bench/browser.ts --smoke",
     "report": "tsx harness/writeReport.ts",
     "report:full": "tsx harness/writeReport.ts --full",
     "server": "tsx server/index.ts",

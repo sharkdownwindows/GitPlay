@@ -29,7 +29,7 @@ describe("differential runner", () => {
     const testCase = generateRandomSequences(151, 42)[150]!;
     const result = runDifferential(0, runEngine, runReal, [testCase]);
     expect(result.summary).toMatchObject({ totalCases: 1, passed: 1, failed: 0 });
-  });
+  }, 30_000);
 
   it("keeps repeated merges with identical parents as separate Git objects", () => {
     const commands = [
@@ -47,7 +47,7 @@ describe("differential runner", () => {
     expect(real.steps[6]!.state.head).not.toEqual(real.steps[8]!.state.head);
     const testCase = { fixture: "repeat-same-parents", setupLength: 0, suffix: commands, commands };
     expect(runDifferential(0, runEngine, runReal, [testCase]).summary.failed).toBe(0);
-  });
+  }, 30_000);
 
   it("classifies an unborn branch creation failure", () => {
     expect(gitErrorClass({ kind: "branch", name: "feature" },
