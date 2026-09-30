@@ -30,7 +30,8 @@ describe("browser measurement summaries", () => {
     const measurement = {
       commitSha: "a".repeat(40), generatedAt: "2026-09-30T00:00:00.000Z",
       browser: "Chrome/154.0.8037.57", os: "win32 10.0.26200 x64", nodeVersion: "v24.16.0",
-      gitVersion: "git version 2.43.0", seed: 42, warmups: { render: 1, frame: 2 },
+      gitVersion: "git version 2.43.0", buildMode: "development" as const,
+      seed: 42, warmups: { render: 1, frame: 2 },
       renderIterations: 2, animationRuns: 10, viewport: "1280x800@1x", mode: "headless" as const,
       saturationPoint: { metric: "SVG render" as const, n: 1_000 },
       render: [
@@ -47,7 +48,8 @@ describe("browser measurement summaries", () => {
     const measurement = {
       commitSha: "a".repeat(40), generatedAt: "2026-09-30T00:00:00.000Z",
       browser: "Chrome/154.0.8037.57", os: "win32 10.0.26200 x64", nodeVersion: "v24.16.0",
-      gitVersion: "git version 2.43.0", seed: 42, warmups: { render: 1, frame: 2 },
+      gitVersion: "git version 2.43.0", buildMode: "production" as const,
+      seed: 42, warmups: { render: 1, frame: 2 },
       renderIterations: 2, animationRuns: 10, viewport: "1280x800@1x", mode: "headless" as const,
       saturationPoint: { metric: "SVG render" as const, n: 1_000 },
       render: [
@@ -79,7 +81,8 @@ describe("browser measurement summaries", () => {
     const valid = {
       commitSha: "a".repeat(40), generatedAt: "2026-09-30T00:00:00.000Z",
       browser: "Chrome/154.0.8037.57", os: "Windows", nodeVersion: "v24.21.0",
-      gitVersion: "git version 2.43.0", seed: 42, warmups: { render: 1, frame: 2 },
+      gitVersion: "git version 2.43.0", buildMode: "development" as const,
+      seed: 42, warmups: { render: 1, frame: 2 },
       renderIterations: 2, animationRuns: 10, viewport: "1280x800@1x", mode: "headless" as const,
       saturationPoint: null,
       render: [{ n: 100, status: "ok" as const, samplesMs: [20, 30] }],
@@ -95,6 +98,7 @@ describe("browser measurement summaries", () => {
     const measurement = {
       commitSha: "a".repeat(40), generatedAt: "2026-09-30T00:00:00.000Z",
       browser: "Chrome", os: "Windows", nodeVersion: "v24.21.0", gitVersion: "git version 2.43.0",
+      buildMode: "development" as const,
       seed: 42, warmups: { render: 1, frame: 2 }, renderIterations: 1, animationRuns: 10,
       viewport: "1280x800@1x", mode: "headless" as const, saturationPoint: null,
       render: [{ n: 100, status: "ok" as const, samplesMs: [0] }],

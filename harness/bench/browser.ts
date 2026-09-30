@@ -4,17 +4,19 @@ import { tmpdir } from "node:os";
 import os from "node:os";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { createServer } from "vite";
 import type { BrowserMeasurement, BrowserPoint } from "./browserMetrics";
 import { classifySaturation, percentile, RENDER_SATURATION_BUDGET_MS } from "./browserMetrics";
+import { selectBrowserBuildMode, startBrowserBenchmarkServer, type BrowserBenchmarkServer } from "./browserServer";
 import { ChromeProcessError, ChromeProcessMonitor, cleanupBrowserResources,
   waitForChromeDebuggingPort } from "./chromeLifecycle";
 
 const smoke = process.argv.includes("--smoke");
+const buildMode = selectBrowserBuildMode(process.argv.slice(2));
 const chrome = process.env.GITSCOPE_BROWSER ?? (process.platform === "win32"
   ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" : "google-chrome");
 const profile = mkdtempSync(path.join(tmpdir(), "gitscope-browser-"));
-let server: Awaited<ReturnType<typeof createServer>> | undefined;
+let server: BrowserBenchmarkServer["server"] | undefined;
+let buildDirectory: string | undefined;
 let processHandle: ReturnType<typeof spawn> | undefined;
 let processMonitor: ChromeProcessMonitor | undefined;
 
@@ -78,9 +80,9 @@ async function measure(port: number, url: string, kind: "render" | "frame", n: n
 }
 
 try {
-  server = await createServer({ server: { host: "127.0.0.1", port: 0 } });
-  await server.listen();
-  const base = server.resolvedUrls!.local[0]!;
+  const browserServer = await startBrowserBenchmarkServer(buildMode);
+  server = browserServer.server;
+  buildDirectory = browserServer.buildDirectory;
   const chromeArguments = ["--headless=new", "--no-first-run", "--no-default-browser-check",
     "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--window-size=1280,800",
     "--force-device-scale-factor=1", "--remote-allow-origins=*"];
@@ -107,14 +109,14 @@ try {
     os: `${os.platform()} ${os.release()} ${os.arch()}`,
     nodeVersion: process.version,
     gitVersion: execFileSync("git", ["--version"], { encoding: "utf8" }).trim(),
-    seed: 42, warmups: { render: renderWarmups, frame: frameWarmups }, renderIterations,
+    buildMode, seed: 42, warmups: { render: renderWarmups, frame: frameWarmups }, renderIterations,
     animationRuns, viewport: "1280x800@1x", mode: "headless", saturationPoint: null,
     render: [], frame: [], layout: [],
   };
   for (const n of renderSizes) {
     const params = new URLSearchParams({ mode: "render", n: String(n),
       renderWarmups: String(renderWarmups), renderIterations: String(renderIterations) });
-    const url = `${base}harness/bench/browser.html?${params}`;
+    const url = `${browserServer.pageUrl}?${params}`;
     const measured = await measure(port, url, "render", n, 30_000);
     result.render.push(measured.point);
     result.layout.push(measured.layout);
@@ -123,7 +125,7 @@ try {
   }
   const frameParams = new URLSearchParams({ mode: "frame", n: String(frameSize),
     frameWarmups: String(frameWarmups), animationRuns: String(animationRuns), animationMs: String(animationMs) });
-  const frame = await measure(port, `${base}harness/bench/browser.html?${frameParams}`, "frame", frameSize, 30_000);
+  const frame = await measure(port, `${browserServer.pageUrl}?${frameParams}`, "frame", frameSize, 30_000);
   result.frame.push(frame.point);
   result.layout.push(frame.layout);
   const saturation = result.render.filter((point) =>
@@ -131,6 +133,7 @@ try {
   result.saturationPoint = saturation ? { metric: "SVG render", n: saturation.n } : null;
   console.log(`Animation frames n=${frameSize}: ${frame.point.status}${frame.point.samplesMs.length
     ? ` p95=${percentile(frame.point.samplesMs, 0.95).toFixed(2)} ms, ${frame.point.samplesMs.length} frames` : ""}`);
+  console.log(`Build mode: ${buildMode}`);
   console.log(`Frame budget exceeded: ${classifySaturation(frame.point, 16.7)}`);
   console.log(`SVG saturation point (p95 > ${RENDER_SATURATION_BUDGET_MS} ms or timeout): ${result.saturationPoint?.n ?? "none"}`);
   if (smoke) {
@@ -154,6 +157,7 @@ try {
     processHandle,
     closeServer: runningServer ? () => runningServer.close() : undefined,
     profile,
+    buildDirectory,
   });
   processMonitor?.dispose();
 }

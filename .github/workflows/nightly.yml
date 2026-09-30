@@ -43,10 +43,10 @@ jobs:
           test -f "$GITSCOPE_BROWSER"
           test -x "$GITSCOPE_BROWSER"
           "$GITSCOPE_BROWSER" --version
-      - name: Measure browser render and animation
+      - name: Measure production browser render and animation
         env:
           GITSCOPE_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
-        run: npm run bench:browser
+        run: npm run bench:browser -- --production
       - name: Full differential, invalid gate and layout benchmark
         run: |
           git --version | grep -Eq '^git version 2\.43\.'

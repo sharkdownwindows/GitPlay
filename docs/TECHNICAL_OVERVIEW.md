@@ -14,7 +14,7 @@ Giao diện chỉ dùng tiếng Anh.
 
 Điểm khác biệt kỹ thuật không nằm ở visualizer mà ở **differential testing**: một harness Node đối chiếu engine với `git` thật. Vì không gian lệnh nhỏ, hệ thống vét cạn được mọi chuỗi đến độ sâu 3 và random có seed đến độ sâu 20. Kết quả hiển thị trong app qua tab Verification, đọc từ JSON do CI sinh.
 
-Tier 1 không cần backend hay database; Tier 2 tài khoản và đồng bộ qua server chỉ được xét sau cổng M4. Không có ML model. Xem §8 về lý do.
+GitScope là sản phẩm Tier 1-only, chạy dưới static hosting. M5 đã loại tài khoản, server và đồng bộ; localStorage là nguồn tiến độ duy nhất. Trọng tâm còn lại là UI polish, user evaluation, stability và demo. `add` không được triển khai. Không có ML model. Xem `STATUS.md` về quyết định M5 và §8 về ML.
 
 ---
 
@@ -66,11 +66,15 @@ Kiến trúc cố tình phẳng. Lý do không phải thẩm mỹ mà là ràng 
 │  └───────────┘  └────────────┘              │
 │                                             │
 │  ┌───────────────────────────────┐          │
+│  │ Progress · localStorage only  │          │
+│  └───────────────────────────────┘          │
+│                                             │
+│  ┌───────────────────────────────┐          │
 │  │  Verification tab             │          │
 │  │  render verification.json     │          │
 │  └───────────────▲───────────────┘          │
 └──────────────────┼──────────────────────────┘
-                   │ (build time, tĩnh)
+                   │ (build time, tĩnh; không có runtime server)
         ┌──────────┴──────────────┐
         │  CI: GitHub Actions     │
         │  ├ diff-test harness ───┼──► git thật
@@ -149,9 +153,9 @@ interface VerificationReport {
 
 Frontend chỉ đọc và render (FR-43). Nếu file thiếu hoặc sai `schemaVersion`, hiển thị empty state rõ ràng — **không bao giờ hiện số liệu giả** (FR-44).
 
-### 3.4a Contract 3 — tiến độ level
+### 3.4a Contract 3 — tiến độ level (localStorage duy nhất)
 
-`src/progress/types.ts` định nghĩa `LevelRecord = { levelId: string; completedAt: string; commandCount: number }` và `ProgressSet = Record<string, LevelRecord>`. `completedAt` là ISO 8601; khóa của `ProgressSet` trùng `levelId`. Cùng kiểu này dùng cho localStorage và, nếu Tier 2 được chọn, API/SQLite.
+`src/progress/types.ts` định nghĩa `LevelRecord = { levelId: string; completedAt: string; commandCount: number }` và `ProgressSet = Record<string, LevelRecord>`. `completedAt` là ISO 8601; khóa của `ProgressSet` trùng `levelId`. localStorage là nơi lưu tiến độ duy nhất.
 
 ### 3.5 Thuật toán layout
 
@@ -244,7 +248,7 @@ Chỉ để báo cáo và hiển thị tĩnh (D-6). Không có logic đo lúc ru
 
 **Render.** `performance.now()` / `PerformanceObserver` quanh các lần animate. Báo cáo **p95 frame time**, không phải trung bình — trung bình che mất giật hình.
 
-**SVG vs Canvas.** Tìm điểm giao. Đây là kết quả có nội dung thật và là đầu vào cho quyết định Q2. Nằm trong cut list nếu thiếu thời gian.
+**SVG vs Canvas.** So sánh giới hạn của cách render hiện tại để hỗ trợ quyết định polish UI. Chỉ làm nếu còn thời gian sau stability và user evaluation.
 
 **Trung thực bắt buộc.** Tải thực tế của công cụ dạy học là ~10² node. Slide phải nói rõ: *"chúng tôi đo để tìm giới hạn của thiết kế, không phải để tuyên bố có nhu cầu tối ưu."* Giám khảo tinh ý sẽ hỏi điều này; trả lời trước sẽ được điểm, bị bắt bài sẽ mất điểm.
 
@@ -267,15 +271,15 @@ Dự án không dùng dataset ngoài. Toàn bộ dữ liệu tự sinh hoặc t�
 | DAG tổng hợp cho benchmark | n = 10²…10⁵ | Generator có seed | Sinh lúc chạy |
 | Verification report | Kết quả diff-test + benchmark | CI | `public/verification.json` |
 
-**Quyết định vận hành cần chốt (Q4):** `verification.json` nên được commit vào repo và CI regenerate khi có thay đổi. Cách này đảm bảo build tĩnh luôn có dữ liệu và demo chạy offline được (NFR-1). Đánh đổi: file có thể cũ hơn code — vì vậy FR-41 bắt buộc hiển thị `generatedAt` và `commitSha` để người xem tự đánh giá.
+`verification.json` được commit vào repo và CI regenerate khi có thay đổi. Cách này đảm bảo build tĩnh luôn có dữ liệu và demo chạy offline được (NFR-1). File có thể cũ hơn code — vì vậy FR-41 bắt buộc hiển thị `generatedAt` và `commitSha` để người xem tự đánh giá.
 
 Mọi dữ liệu sinh ra đều **có seed và tái lập được**. Seed ghi trong report.
 
 ---
 
-## 6. Seam cho staging area
+## 6. Seam cho staging area — không thuộc phạm vi sản phẩm
 
-Bốn điểm nối trong contract hiện tại. Đây là hoãn có chủ đích, không phải speculative feature (FR-45).
+Bốn trường seam được giữ trong contract ngày 1 để tương thích kiểu dữ liệu; chúng không phải roadmap cho staging.
 
 | # | Seam | Cài đặt v1 |
 |---|---|---|
@@ -284,9 +288,7 @@ Bốn điểm nối trong contract hiện tại. Đây là hoãn có chủ đíc
 | 3 | `RepoState.index: IndexState \| null` | luôn `null` |
 | 4 | `RepoState.conflicts: Conflict[] \| null`; kiểu `DetectConflicts` | `conflicts` luôn `null`; `DetectConflicts` trả `null` ở v1 |
 
-Nếu bỏ qua bước này, thêm `add` sau đó sẽ phải sửa engine cộng với mọi consumer (goal checker, undo stack, normalizer, UI) — khác biệt giữa 3–5 ngày và khoảng 8 ngày.
-
-Nếu thêm lại staging, các kiểu `Snapshot.files`, `WorkingTree.files` và `IndexState.staged` dùng `Record<string, string>` phẳng. **Không** làm content-addressable storage với blob/tree object: nó không giúp gì cho mục tiêu dạy học và làm normalizer phức tạp thêm đáng kể.
+Các seam giữ tương thích với contract ngày 1, nhưng không có kế hoạch triển khai staging hoặc `add` trong scope đã chốt tại M5.
 
 ---
 

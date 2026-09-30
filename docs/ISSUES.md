@@ -11,8 +11,8 @@ Ngày là ngày lịch, tính từ ngày bắt đầu dự án.
 | M1 | 1 | Kickoff · đóng băng contract | Ba contract có được chốt không? |
 | M2 | 5 | Vertical slice | Đủ tốc độ hay phải cắt scope ngay? |
 | M3 | 8 | Engine đủ 5 lệnh · harness v1 | Có cần chuyển diff-test sâu sang nightly? |
-| M4 | 10 | **Cổng quyết định** | Khởi động Tier 2, `add`, hay không gì cả? |
-| M5 | 14 | Tier 2 deadline · nội dung xong | Giữ hay bỏ Tier 2? |
+| M4 | 10 | **Cổng quyết định** | Đánh giá bằng chứng cho năm lệnh, differential test và report CI. |
+| M5 | 14 | Scope chốt · nội dung và eval | Hoàn tất phạm vi Tier 1-only trước feature freeze. |
 | M6 | 17 | Feature freeze đã qua · tổng duyệt | Ai trình bày phần nào? Sẵn sàng chưa? |
 
 Demo: ngày 21. Feature freeze: ngày 15, không thương lượng.
@@ -40,10 +40,10 @@ Demo: ngày 21. Feature freeze: ngày 15, không thương lượng.
 | # | Issue | Chủ | Chặn bởi | AC | Ưu tiên | Giờ |
 |---|---|---|---|---|---|---|
 | 1 | Scaffold: Vite + TS + Tailwind + Vitest, cây thư mục theo STRUCTURE §2 | D1 | — | `npm run dev` mở được trang trắng; 9 thư mục `src/*` đều tồn tại và có ≥1 file | P0 | 2 |
-| 2 | Cài **toàn bộ** dependency, kể cả của Tier 2 | D1 | ⛔1 | `package.json` có đủ react, vite, ts, tailwind, vitest, tsx, express, better-sqlite3, argon2, express-rate-limit. Không ai phải sửa `package.json` sau ngày 1. | P0 | 0.5 |
+| 2 | Cài dependencies ứng dụng và công cụ dev | D1 | ⛔1 | `package.json` có các dependency cần cho app và validation; không ai phải sửa `package.json` sau ngày 1. | P0 | 0.5 |
 | 3 | **CONTRACT 1** — `src/core/types.ts` | D1 | ⛔1 | `RepoState`, `Command`, `Result`, `ErrorClass` đầy đủ. Bốn seam staging có mặt, luôn `null`. Cả nhóm review và đồng ý trong buổi họp. | P0 | 2 |
 | 4 | **CONTRACT 2** — `src/verification/report.ts` | D6 | ⛔1 | Kiểu cho diff-test summary, scaling series, `generatedAt`, `commitSha`, `gitVersion`, `divergences[]` | P0 | 1 |
-| 5 | **CONTRACT 3** — `src/progress/types.ts` | D4 | ⛔1 | `LevelRecord`, `ProgressSet`. Dùng chung cho localStorage, API payload, hàng SQLite. | P0 | 0.5 |
+| 5 | **CONTRACT 3** — `src/progress/types.ts` | D4 | ⛔1 | `LevelRecord`, `ProgressSet` cho tiến độ localStorage. | P0 | 0.5 |
 | 6 | Stub engine: 5 lệnh trả state hardcoded, đúng kiểu, không throw | D1 | ⛔3 | `execute(state, cmd)` chạy được cho cả 5 `kind`; `npm test` có 1 test xanh | P0 | 1.5 |
 | 7 | App shell: 4 tab rỗng (Practice · Levels · Reference · Verification) | D2 | ⛔1 | Chuyển tab được, không lỗi console | P0 | 1.5 |
 | 8 | `viz/MiniGraph.tsx` stub nhận `RepoState`, render một hình chữ nhật | D2 | ⛔3 | D4 import được mà không cần D2 làm xong visualizer | P0 | 0.5 |
@@ -122,13 +122,13 @@ Demo: ngày 21. Feature freeze: ngày 15, không thương lượng.
 
 **Điều kiện thoát:** 5 lệnh chạy đúng; diff-test xanh trên chuỗi hợp lệ; `verification.json` sinh từ CI thật chứ không còn giả.
 
-**Quyết định phải chốt — đây là buổi họp quan trọng nhất sau M1:**
+**Kế hoạch quyết định tại M4 (lịch sử; scope cuối cùng được chốt ở M5):**
 
 | Tình trạng | Hành động |
 |---|---|
-| Đạt điều kiện thoát, còn slack | Khởi động **Tier 2** (D-3a). Deadline cứng ngày 14. |
-| Đạt, còn nhiều slack | Tier 2 + xét thêm `add` (không kèm `restore`) |
-| Chưa đạt | Không thêm gì. Dồn toàn bộ vào ổn định, nội dung level, diễn tập. |
+| Đạt điều kiện thoát, còn slack | Theo kế hoạch lúc đó, có thể cân nhắc Tier 2. |
+| Đạt, còn nhiều slack | Theo kế hoạch lúc đó, cân nhắc Tier 2 và `add`. |
+| Chưa đạt | Không thêm gì; tập trung ổn định, nội dung level, diễn tập. |
 
 Quy tắc: quyết định bằng trạng thái CI ở thời điểm họp, không bằng lời hứa "mai xong".
 
@@ -146,31 +146,31 @@ Quy tắc: quyết định bằng trạng thái CI ở thời điểm họp, kh�
 
 ---
 
-## M5 · Ngày 14 — Tier 2 deadline, nội dung xong
+## M5 · Ngày 14 — scope chốt, nội dung và eval
 
-**Mục tiêu:** mọi thứ có thể vào sản phẩm đều đã vào. Ngày 15 là feature freeze.
+**Mục tiêu:** chốt sản phẩm Tier 1-only, hoàn thiện nội dung và đánh giá trước feature freeze ngày 15.
 
-**Điều kiện thoát:** ≥8 level hoàn chỉnh; nếu Tier 2 được khởi động ở M4 thì luồng đăng ký → đăng nhập → hợp nhất tiến độ chạy end-to-end và job `tier1-build` xanh.
+**Điều kiện thoát:** ít nhất 8 level hoàn chỉnh. Tám level 01–08 hiện tại đáp ứng điều kiện thoát của #59; không yêu cầu level 09–12.
 
-**Quyết định phải chốt:** giữ hay bỏ Tier 2. Chưa chạy end-to-end vào lúc họp → **bỏ hẳn**, revert, quay về localStorage. Một tính năng đăng nhập nửa vời tệ hơn là không có, và nó sẽ hỏng đúng lúc demo.
+**Quyết định chính thức:** cắt Tier 2. GitScope là sản phẩm Tier 1-only. Không triển khai `add`, authentication, server hoặc đồng bộ; localStorage là nguồn tiến độ duy nhất. Trọng tâm còn lại là UI polish, user evaluation, stability và demo.
 
-Các issue 52–57 chỉ tồn tại nếu M4 quyết định khởi động Tier 2.
+Tier 2 từng được cân nhắc sau khi cổng M4 đạt; quyết định M5 thay thế phương án dự kiến đó. Issues #52–#58 dưới đây được giữ để truy dấu kế hoạch ban đầu và đều có trạng thái Cancelled / Out of scope.
 
-| # | Issue | Chủ | Chặn bởi | AC | Ưu tiên | Giờ |
-|---|---|---|---|---|---|---|
-| 52 | `server/`: 1 process Express phục vụ static + API, `db.ts` + `schema.sql` | D5 | ⛔M4 | `npm run server` phục vụ được build tĩnh ở cùng origin; 2 bảng tạo tự động | P0 | 4 |
-| 53 | `/api/auth`: register, login, logout — argon2id, cookie httpOnly SameSite=Lax | D5 | ⛔52 | Đăng ký rồi đăng nhập được; không có password nào xuất hiện trong log | P0 | 4 |
-| 54 | Rate limit `/api/auth/*`: 10 lần / IP / 15 phút | D5 | ⛔53 | Lần thứ 11 trả 429 | P0 | 1 |
-| 55 | `/api/progress` GET + POST, upsert last-write-wins | D5 | ⛔52 | POST rồi GET trả đúng dữ liệu | P0 | 2 |
-| 56 | `sync/client.ts` + `attach.ts` — best-effort, nuốt mọi lỗi | D5 | ⛔55 | Tắt server, hoàn thành 1 level: không có lỗi nào hiện ra UI | P0 | 3 |
-| 57 | CI job `tier1-build` chạy `scripts/strip-tier2.sh` | D5 | ⛔56 | Xóa `sync/` + `server/` vẫn build xanh | P0 | 1.5 |
-| 58 | `AuthPanel` — modal đóng được, không chặn ai | D5 | ⛔53 | Mở app lần đầu vào thẳng level 1, không modal | P0 | 2 |
-| 59 | Level 09–12 (undo ≠ git, LCA 3 nhánh, branch là con trỏ, freestyle) | D4 | ⛔48 | Đủ ≥8 level nếu bị cắt; đủ 12 nếu không | P0 | 5 |
-| 60 | Level 09 nói rõ undo là của trình mô phỏng, Git thật chỉ có reflog | D4 | ⛔59 | Nội dung level nêu đúng điểm khác biệt này | P1 | 1 |
-| 61 | Eval người dùng: 6–8 bạn, quiz trước/sau 6 câu, 30 phút | D6 | ⛔59 | Có bảng số liệu thô; ghi lại mọi chỗ bị kẹt | P0 | 4 |
-| 62 | Sửa bug do diff-test và eval phát hiện | D1 | ⛔42,61 | Nhật ký divergence có ≥1 mục kèm commit sửa | P0 | 5 |
-| 63 | Trạng thái rỗng và trạng thái lỗi cho mọi tab | D2 | — | Xóa `verification.json` → tab hiện trạng thái rỗng, không crash | P1 | 2 |
-| 64 | Kiểm tra offline: tắt mạng, làm hết 1 level | D3 | — | Không chức năng nào suy giảm; DevTools không có request nào thất bại gây lỗi UI | P0 | 1 |
+| # | Issue | Chủ | Chặn bởi | AC | Ưu tiên | Giờ | Trạng thái |
+|---|---|---|---|---|---|---|---|
+| 52 | `server/`: 1 process Express phục vụ static + API, `db.ts` + `schema.sql` | D5 | ⛔M4 | Không có server | P0 | 4 | Cancelled / Out of scope |
+| 53 | `/api/auth`: register, login, logout — argon2id, cookie httpOnly SameSite=Lax | D5 | ⛔52 | Không có authentication | P0 | 4 | Cancelled / Out of scope |
+| 54 | Rate limit `/api/auth/*`: 10 lần / IP / 15 phút | D5 | ⛔53 | Không có API auth | P0 | 1 | Cancelled / Out of scope |
+| 55 | `/api/progress` GET + POST, upsert last-write-wins | D5 | ⛔52 | Tiến độ chỉ lưu localStorage | P0 | 2 | Cancelled / Out of scope |
+| 56 | `sync/client.ts` + `attach.ts` — best-effort, nuốt mọi lỗi | D5 | ⛔55 | Không đồng bộ tiến độ | P0 | 3 | Cancelled / Out of scope |
+| 57 | CI job `tier1-build` chạy `scripts/strip-tier2.sh` | D5 | ⛔56 | Không có build để loại phần không thuộc sản phẩm | P0 | 1.5 | Cancelled / Out of scope |
+| 58 | `AuthPanel` — modal đóng được, không chặn ai | D5 | ⛔53 | Không có auth panel | P0 | 2 | Cancelled / Out of scope |
+| 59 | Level 09–12 (undo ≠ git, LCA 3 nhánh, branch là con trỏ, freestyle) | D4 | ⛔48 | Điều kiện tối thiểu của issue là ≥8 level; level 01–08 hiện tại đáp ứng điều kiện thoát. Không làm level 09–12. | P0 | 5 | ✅ Complete — 8 level đủ |
+| 60 | Level 09 nói rõ undo là của trình mô phỏng, Git thật chỉ có reflog | D4 | ⛔59 | Không làm level 09 | P1 | 1 | Cancelled / Out of scope |
+| 61 | Eval người dùng: 6–8 bạn, quiz trước/sau 6 câu, 30 phút | D6 | — | Có bảng số liệu thô; ghi lại mọi chỗ bị kẹt | P0 | 4 | M5 scope |
+| 62 | Sửa bug do diff-test và eval phát hiện | D1 | ⛔42,61 | Nhật ký divergence có ≥1 mục kèm commit sửa | P0 | 5 | M5 scope |
+| 63 | Trạng thái rỗng và trạng thái lỗi cho mọi tab | D2 | — | Xóa `verification.json` → tab hiện trạng thái rỗng, không crash | P1 | 2 | M5 scope |
+| 64 | Kiểm tra offline: tắt mạng, làm hết 1 level | D3 | — | Không chức năng nào suy giảm; DevTools không có request nào thất bại gây lỗi UI | P0 | 1 | M5 scope |
 
 ---
 
@@ -190,9 +190,9 @@ Các issue 52–57 chỉ tồn tại nếu M4 quyết định khởi động Tie
 | 68 | Ngân hàng câu hỏi Q&A: ≥15 câu kèm câu trả lời ngắn | D6 | ⛔66 | Gồm: tại sao không dùng LGB, tại sao không có `add`, harness bắt được lỗi nào chưa, tại sao không dùng D3/ORM/LLM | P0 | 3 |
 | 69 | Diễn tập Q&A chéo: mỗi người trả lời 5 câu về phần **không phải** của mình | ALL | ⛔68 | Cả 6 người qua được; ai trượt thì ôn lại và làm lại | P0 | 3 |
 | 70 | Chạy lại CI đầy đủ, `verification.json` sinh mới trước demo | D5 | — | `generatedAt` cách ngày demo < 48 giờ | P0 | 1 |
-| 71 | Bản dự phòng: build tĩnh Tier 1 deploy song song | D5 | ⛔57 | Mở được bằng URL riêng, không cần backend | P0 | 1 |
+| 71 | Bản dự phòng: static production deployment | D5 | — | Mở được bằng URL riêng từ production build; không cần backend và không phụ thuộc #57 | P0 | 1 |
 | 72 | Báo cáo cuối: gộp kết quả eval, benchmark, diff-test | D6 | ⛔61,70 | Mọi con số trong báo cáo truy ngược được về một lần chạy CI cụ thể | P0 | 4 |
-| 73 | README cuối cùng + hướng dẫn chạy Tier 2 | D6 | — | Người ngoài nhóm chạy được cả hai chế độ | P1 | 1.5 |
+| 73 | README cuối cùng, mô tả sản phẩm Tier 1-only | D6 | — | Người ngoài nhóm chạy và hiểu được sản phẩm Tier 1-only | P1 | 1.5 |
 
 ---
 
@@ -203,8 +203,8 @@ Các issue 52–57 chỉ tồn tại nếu M4 quyết định khởi động Tie
 | D1 | Git engine — critical path | 1,2,3,6,13,14,27,28,29,30,31,62 | ~32 |
 | D2 | Visualizer, app shell | 7,8,15,16,19,36,37,49,63 | ~28 |
 | D3 | Terminal | 17,18,64 | ~7 |
-| D4 | Level, progress, command reference | 5,20,21,26,38,39,48,51,59,60 | ~34 |
-| D5 | Harness, CI, Tier 2 | 10,11,22,23,32,33,34,35,42,43,44,45,46,52–58,70,71 | ~48 |
+| D4 | Level, progress, command reference | 5,20,21,26,38,39,48,51,59 (đạt), 60 (hủy) | ~34 |
+| D5 | Harness, CI, deployment | 10,11,22,23,32,33,34,35,42,43,44,45,46,70,71 | ~48 |
 | D6 | Verification, benchmark, eval, tài liệu | 4,9,12,24,25,40,41,47,50,61,65,66,67,68,72,73 | ~42 |
 
 Issue #69 (diễn tập Q&A chéo) thuộc cả nhóm, không có chủ riêng.
@@ -213,7 +213,7 @@ Issue #69 (diễn tập Q&A chéo) thuộc cả nhóm, không có chủ riêng.
 
 D3 nhẹ nhất (~7 giờ) vì terminal là module nhỏ nhất. Từ M3 trở đi, D3 chuyển sang hỗ trợ: viết nội dung level cùng D4 (#38, #48, #59) và viết test cho engine cùng D5. Đây là điều chỉnh có chủ đích — đừng phát minh thêm việc cho D3 chỉ để lấp chỗ trống, vì mọi việc phát minh thêm đều là scope creep.
 
-D5 nặng nhất (~48 giờ) vì gánh cả harness lẫn Tier 2. Nếu M4 quyết định không khởi động Tier 2, tải của D5 giảm còn ~30 giờ và cân bằng lại. Đây là một lý do nữa để cổng ngày 10 là cổng thật chứ không phải hình thức.
+D5 có tải cao nhất (~48 giờ) do gánh harness, CI và deployment. Các issue hạ tầng tài khoản và đồng bộ đã bị hủy tại M5, không nằm trong kế hoạch công việc còn lại.
 
 D1 là critical path từ M1 tới M3. Không giao thêm việc gì cho D1 ngoài engine trong giai đoạn này, kể cả việc nhỏ.
 
@@ -230,10 +230,10 @@ D1 là critical path từ M1 tới M3. Không giao thêm việc gì cho D1 ngoà
 
 **Cấm trong buổi họp:** thiết kế lại kiến trúc, tranh luận kỹ thuật chi tiết, thêm scope. Ba việc này để ngoài buổi họp.
 
-**Cut list — cắt từ trên xuống khi trượt mốc:**
+**Cut list lịch sử — các quyết định đã áp dụng:**
 1. Animation (#36) → chuyển tức thời
-2. Số level 12 → 8 (cắt #59)
-3. Tier 2 (#52–58) → chỉ localStorage
+2. Level 09–12 (#59) → giữ 8 level; điều kiện tối thiểu đã đạt
+3. Tier 2 (#52–58) → Cancelled / Out of scope; localStorage là nguồn tiến độ duy nhất
 4. Sơ đồ mini Command Reference (#39) → chỉ giữ text
 5. Benchmark render DOM (#50) → chỉ giữ layout scaling
 

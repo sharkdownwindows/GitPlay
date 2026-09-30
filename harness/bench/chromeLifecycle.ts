@@ -112,6 +112,7 @@ interface BrowserResources {
   processHandle?: ChildProcess;
   closeServer?: () => Promise<void>;
   profile: string;
+  buildDirectory?: string;
   waitAfterKillMs?: number;
   warn?: (message: string) => void;
 }
@@ -132,15 +133,20 @@ export async function cleanupBrowserResources(resources: BrowserResources): Prom
 
   if (resources.processHandle) await delay(resources.waitAfterKillMs ?? 1_000);
 
+  removeTemporaryDirectory(resources.profile, "Chrome profile", warn);
+  if (resources.buildDirectory) removeTemporaryDirectory(resources.buildDirectory, "production build", warn);
+}
+
+function removeTemporaryDirectory(directory: string, label: string, warn: (message: string) => void): void {
   try {
-    const resolved = realpathSync(resources.profile);
+    const resolved = realpathSync(directory);
     const tempRoot = realpathSync(tmpdir()) + path.sep;
     if (!resolved.startsWith(tempRoot)) {
-      warn(`Refusing to remove browser profile outside the temp directory: ${resolved}`);
+      warn(`Refusing to remove ${label} outside the temp directory: ${resolved}`);
       return;
     }
     rmSync(resolved, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
   } catch (error) {
-    warn(`Could not remove temporary Chrome profile: ${String(error)}`);
+    warn(`Could not remove temporary ${label}: ${String(error)}`);
   }
 }

@@ -43,11 +43,11 @@ function SeriesChart({ label, points }: { label: string; points: KeyedScalingPoi
     <text x={12} y={TOP + 8} fontSize={11} fill="currentColor">Time (ms, log scale)</text>
     <text x={LEFT - 8} y={TOP + 4} textAnchor="end" fontSize={10} fill="currentColor">{(10 ** yMax).toPrecision(2)}</text>
     <text x={LEFT - 8} y={BOTTOM + 4} textAnchor="end" fontSize={10} fill="currentColor">{(10 ** yMin).toPrecision(2)}</text>
-    <path d={line("medianMs")} fill="none" stroke="#38bdf8" strokeWidth={2} />
-    <path d={line("p95Ms")} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="5 4" />
+    <path d={line("medianMs")} fill="none" stroke="var(--color-primary)" strokeWidth={2} />
+    <path d={line("p95Ms")} fill="none" stroke="var(--color-warning)" strokeWidth={2} strokeDasharray="5 4" />
     {ordered.flatMap((point) => (["medianMs", "p95Ms"] as const).map((metric) =>
       <circle key={`${point.key}-${metric}`} cx={x(point.n)} cy={y(point[metric])} r={4}
-        fill={metric === "medianMs" ? "#38bdf8" : "#fbbf24"}
+        fill={metric === "medianMs" ? "var(--color-primary)" : "var(--color-warning)"}
         data-series={label} data-n={point.n} data-metric={metric}
         aria-label={`${point.n} commits, ${metric === "medianMs" ? "median" : "p95"} ${point[metric]} ms`} />
     ))}
@@ -56,9 +56,9 @@ function SeriesChart({ label, points }: { label: string; points: KeyedScalingPoi
 
 export function ScalingChart({ series }: { series: ScalingSeries[] }) {
   if (series.length === 0) {
-    return <section className="rounded border border-neutral-700 p-4" aria-label="Scaling data">
+    return <section className="rounded-lg border border-line bg-surface p-4" aria-label="Scaling data">
       <h2 className="font-semibold">Scaling data</h2>
-      <p className="mt-2 text-sm text-neutral-400">No measured scaling data available.</p>
+      <p className="mt-2 text-sm text-fg-muted">No measured scaling data available.</p>
     </section>;
   }
 
@@ -75,11 +75,11 @@ export function ScalingChart({ series }: { series: ScalingSeries[] }) {
         point.n > 0 && point.medianMs > 0 && point.p95Ms > 0 && point.iterations > 0 &&
         Number.isFinite(point.n) && Number.isFinite(point.medianMs) && Number.isFinite(point.p95Ms) &&
         Number.isFinite(point.iterations)));
-      return <section key={item.key} className="rounded border border-neutral-700 p-4" aria-label={item.label}>
+      return <section key={item.key} className="rounded-lg border border-line bg-surface p-4" aria-label={item.label}>
         <h3 className="font-medium">{item.label}</h3>
-        {points.length === 0 ? <p className="mt-2 text-sm text-neutral-400">No measured scaling data available.</p> : <>
+        {points.length === 0 ? <p className="mt-2 text-sm text-fg-muted">No measured scaling data available.</p> : <>
           <SeriesChart label={item.label} points={points} />
-          <p className="text-sm text-neutral-400">Median: solid blue · p95: dashed amber · time in ms</p>
+          <p className="text-sm text-fg-muted">Median: solid blue · p95: dashed amber · time in ms</p>
           <table className="mt-2 w-full text-left text-sm">
             <thead><tr><th scope="col">Commits (n)</th><th scope="col">Median (ms)</th><th scope="col">p95 (ms)</th><th scope="col">Iterations</th></tr></thead>
             <tbody>{points.map((point) => <tr key={point.key}>

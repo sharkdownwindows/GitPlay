@@ -13,6 +13,7 @@ export interface BrowserMeasurement {
   os: string;
   nodeVersion: string;
   gitVersion: string;
+  buildMode: "development" | "production";
   seed: number;
   warmups: { render: number; frame: number };
   renderIterations: number;
@@ -56,6 +57,7 @@ export function browserSeriesForReport(value: unknown, commitSha: string): Scali
       typeof measurement.os !== "string" || measurement.os.length === 0 ||
       typeof measurement.nodeVersion !== "string" || !/^v\d+\.\d+/.test(measurement.nodeVersion) ||
       typeof measurement.gitVersion !== "string" || !/^git version \d+\.\d+/.test(measurement.gitVersion) ||
+      !["development", "production"].includes(measurement.buildMode) ||
       !Number.isSafeInteger(measurement.seed) ||
       !Number.isSafeInteger(measurement.renderIterations) || measurement.renderIterations < 1 ||
       !Number.isSafeInteger(measurement.animationRuns) || measurement.animationRuns < 1 ||

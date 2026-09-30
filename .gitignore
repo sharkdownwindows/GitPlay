@@ -10,11 +10,6 @@ coverage/
 harness/tmp/
 *.local
 
-# local data (Tier 2)
-*.sqlite
-*.sqlite3
-*.db
-
 # env
 .env
 .env.*

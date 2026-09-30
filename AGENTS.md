@@ -5,7 +5,8 @@
 Build a reliable educational Git simulator for a six-person,
 three-week university project.
 
-Tier 1 is the priority:
+GitScope is a Tier 1-only product. Remaining work focuses on UI polish,
+user evaluation, stability, and the demo:
 - Git engine for commit, branch, switch, checkout, merge
 - terminal
 - graph visualizer
@@ -15,8 +16,7 @@ Tier 1 is the priority:
 - differential testing
 - layout benchmark
 
-Tier 2 account and server synchronization are optional.
-Do not expand Tier 2 before the M4 gate passes.
+Do not implement `add`, authentication, a server, or synchronization.
 
 ## Source of truth
 
@@ -36,7 +36,7 @@ newly written tests when they conflict.
 - Parser validates syntax; engine validates repository state.
 - Layout must be deterministic and must not modify RepoState.
 - UI state changes must go through the application store.
-- Tier 1 must run without the backend.
+- Progress is stored locally in localStorage; there is no backend.
 - Do not add dependencies unless necessary.
 - Do not refactor unrelated code.
 - Do not implement speculative features.
@@ -68,10 +68,6 @@ Run when relevant:
 
 - npm run diff:quick
 - npm run bench
-
-Do not run `npm run check:tier1` in the working repository because
-the script deletes Tier 2 directories. Run it only in CI or a disposable
-clean worktree.
 
 ## Completion report
 

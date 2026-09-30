@@ -13,7 +13,7 @@ LearnGitBranching (LGB) đã giải quyết một phần vấn đề này, nhưn
 
 Một web app mô phỏng 5 lệnh Git trên commit graph: `commit`, `branch`, `switch`, `checkout`, `merge`.
 
-Toàn bộ phần học chạy **hoàn toàn trong trình duyệt** và không cần mạng. Một service backend tối thiểu (tài khoản + lưu tiến độ level) được thêm ở Tier 2, đồng bộ theo kiểu best-effort: server chết thì app vẫn chạy bình thường.
+GitScope là ứng dụng Tier 1-only chạy hoàn toàn trong trình duyệt và có thể dùng offline sau khi tải. Tiến độ level chỉ được lưu trong localStorage.
 
 Người dùng gõ lệnh vào terminal, thấy graph thay đổi kèm animation, làm các level có kiểm tra mục tiêu tự động, undo/redo tự do.
 
@@ -29,15 +29,13 @@ Không phải visualizer — visualizer là thứ đã có. Điểm khác biệt
 
 ## Phạm vi
 
-**Tier 1 — cam kết:** 5 lệnh trên commit DAG · visualizer + animation · Command Reference · terminal + thông báo lỗi giống Git · 8–12 level · undo/redo · differential testing · benchmark · tab Verification.
-
-**Tier 2 — có điều kiện:** tài khoản + lưu tiến độ level qua backend tối thiểu. Chỉ khởi động nếu Tier 1 đạt cổng ngày 10 (xem D-3). Không nằm trên critical path của bất kỳ hạng mục Tier 1 nào.
+**Phạm vi cam kết:** 5 lệnh trên commit DAG · visualizer + animation · Command Reference · terminal + thông báo lỗi giống Git · 8 level · undo/redo · differential testing · benchmark · tab Verification. Không triển khai `add`, authentication, server hoặc đồng bộ.
 
 **Ngôn ngữ giao diện: chỉ tiếng Anh.** Không song ngữ.
 
 **Ngoài phạm vi (v1):** `add` / `restore` và staging area · working directory · nội dung file · merge conflict · remote (`push`/`pull`/`fetch`) · rebase · OAuth, phân quyền, leaderboard, khôi phục mật khẩu.
 
-Bốn "seam" được chừa sẵn trong code (chi tiết ở tài liệu kỹ thuật) để `add` có thể thêm lại với chi phí 3–5 ngày thay vì 8.
+Các seam trong contract được giữ tương thích với kiểu dữ liệu v1; staging và `add` không thuộc phạm vi sản phẩm.
 
 ## Thành công trông như thế nào
 
@@ -48,7 +46,6 @@ Bốn "seam" được chừa sẵn trong code (chi tiết ở tài liệu kỹ t
 | Hoàn thành level | ≥ 5/6 người dùng thử hoàn thành được level detached HEAD |
 | Hiệu năng | p95 frame time < 16.7 ms tại n = 200 commit |
 | Rubric | 5 main features + 2 advanced (diff-testing, benchmark) |
-| Tier 2 (nếu khởi động) | Đăng nhập + tiến độ đồng bộ; tắt server không làm hỏng app |
 
 Hàng thứ hai quan trọng nhất. Một harness chưa từng bắt được lỗi nào thì chưa chứng minh được giá trị của nó — đó là điểm yếu duy nhất mà giám khảo có thể tấn công.
 

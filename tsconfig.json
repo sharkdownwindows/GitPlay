@@ -20,5 +20,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "harness", "server", "scripts", "vite.config.ts"]
+  "include": ["src", "harness", "scripts", "vite.config.ts"]
 }

@@ -14,11 +14,12 @@ Xây dựng web app giáo dục giúp người học thấy tác động của l
 - Terminal nhập lệnh, parser cú pháp và hiển thị output/lỗi; graph hiển thị commit, cạnh, branch và HEAD.
 - Level có trạng thái đầu, mục tiêu được kiểm tra tự động, Command Reference cho năm lệnh, undo/redo và tiến độ lưu local.
 - Harness Node so engine với `git` thật, benchmark layout, report `verification.json` và tab Verification đọc report.
-- Tier 1 hoạt động sau khi tải mà không cần server.
+- Ứng dụng chạy trên static hosting và tiếp tục dùng được offline sau khi tải.
+- localStorage là nguồn lưu tiến độ duy nhất; không có dịch vụ phía server.
 
-### Tier 2 — tùy chọn
+### Phạm vi đã loại
 
-Tài khoản và đồng bộ tiến độ bằng server/API/SQLite chỉ được khởi động nếu cổng M4 đạt: năm lệnh chạy đúng, diff-test trên chuỗi hợp lệ xanh và report được sinh từ CI thật. Tier 1 vẫn chạy độc lập khi không có Tier 2. M5 quyết định giữ hay bỏ Tier 2 theo luồng end-to-end và build Tier 1.
+M5 chính thức chốt GitScope là sản phẩm Tier 1-only. Không triển khai `add`, authentication, server hoặc đồng bộ tiến độ. Tài khoản và đồng bộ từng được cân nhắc sau cổng M4 nhưng đã bị cắt; xem `STATUS.md`.
 
 ## 3. Functional requirements
 
@@ -43,7 +44,7 @@ Parser chỉ xác nhận cú pháp và trả `Command | ParseError`; engine xác
 | FR-21 | Graph hiển thị DAG, branch ref và HEAD; layout tất định và không sửa `RepoState`. |
 | FR-29 | Checker so DAG đẳng cấu, bỏ qua commit ID/message nhưng giữ cấu trúc, vị trí branch và HEAD; sandbox không tự hoàn thành. |
 | FR-30 | Undo/redo bằng snapshot của `RepoState`; lệnh mới xóa redo stack. |
-| FR-31 | Tiến độ level lưu local. `LevelRecord` và `ProgressSet` theo `src/progress/types.ts`: `levelId`, `completedAt`, `commandCount`; khóa record là `levelId`. |
+| FR-31 | Tiến độ level chỉ lưu trong localStorage. Đây là nguồn tiến độ duy nhất. `LevelRecord` và `ProgressSet` theo `src/progress/types.ts`: `levelId`, `completedAt`, `commandCount`; khóa record là `levelId`. |
 | FR-37 | Command Reference nêu cú pháp/tác động của năm lệnh và dùng engine/layout cho sơ đồ mini. |
 
 ### 3.3 Kiểm chứng
@@ -54,7 +55,7 @@ Parser chỉ xác nhận cú pháp và trả `Command | ParseError`; engine xác
 | FR-42 | Harness so DAG, refs, HEAD và lớp lỗi với `git` thật; `errorClass` là hard gate, khác câu chữ `output` là cảnh báo. |
 | FR-43 | Frontend chỉ đọc `public/verification.json` theo `src/verification/report.ts`, gồm `schemaVersion`, metadata, `diffTest`, `coverage`, `scaling`, `divergences`. |
 | FR-44 | Report thiếu hoặc sai schema phải có empty state rõ ràng; không trình bày dữ liệu giả như kết quả thật. |
-| FR-45 | Bốn seam staging trong `RepoState` có mặt và luôn `null` ở v1; không triển khai staging trước quyết định scope. |
+| FR-45 | Bốn seam staging trong `RepoState` có mặt và luôn `null` ở v1; staging và `add` không thuộc phạm vi sản phẩm. |
 
 ## 4. Non-functional requirements
 
@@ -73,7 +74,7 @@ Các mục tiêu định lượng cho diff-test, frame time, bundle và CI nằm
 
 - Không mô phỏng working tree, staging, nội dung file hay conflict nội dung ở v1.
 - Không có remote Git (`push`, `pull`, `fetch`, `clone`) và không mở rộng ngoài năm lệnh bắt buộc trước cổng scope.
-- Không dùng ML/LLM, dataset ngoài, force-directed layout, monorepo hoặc backend bắt buộc cho Tier 1.
+- Không triển khai `add`, authentication, server, đồng bộ, remote Git, ML/LLM, dataset ngoài, force-directed layout hoặc monorepo.
 - Undo/redo là chức năng của simulator, không được mô tả là lệnh Git thật.
 
 ## 6. Success criteria

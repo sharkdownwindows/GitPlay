@@ -38,7 +38,7 @@ export function Terminal({ onCommand, output, disabled = false }: Props) {
   }
 
   return (
-    <section aria-label="Git terminal" className="rounded border border-neutral-700 bg-neutral-950 p-4 font-mono text-sm text-neutral-100">
+    <section aria-label="Git terminal" className="terminal rounded-lg border border-term-line bg-term p-4 font-mono text-sm text-term-fg">
       <div role="log" aria-label="Command history" className="space-y-1 whitespace-pre-wrap">
         {session.entries.map((entry, index) => (
           <div key={index}>
@@ -53,6 +53,7 @@ export function Terminal({ onCommand, output, disabled = false }: Props) {
       <label className="mt-3 flex gap-2">
         <span aria-hidden="true">$</span>
         <input
+          id="terminal-input"
           type="text"
           disabled={disabled}
           aria-label="Git command"
@@ -61,7 +62,7 @@ export function Terminal({ onCommand, output, disabled = false }: Props) {
           value={session.input}
           onChange={(event) => updateSession(editInput(sessionRef.current, event.target.value))}
           onKeyDown={handleKeyDown}
-          className="min-w-0 flex-1 bg-transparent outline-none"
+          className="min-w-0 flex-1 rounded-sm border border-transparent bg-transparent outline-none"
         />
       </label>
     </section>

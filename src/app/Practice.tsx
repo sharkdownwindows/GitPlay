@@ -26,7 +26,7 @@ export function Practice() {
       <h1 className="text-lg font-semibold">Practice</h1>
       <div className="mt-4 grid gap-6 lg:grid-cols-2">
         <Terminal onCommand={onCommand} output={state.output} disabled={state.inputLocked} />
-        <div className="overflow-auto rounded border border-neutral-700 bg-neutral-950 p-4">
+        <div className="overflow-auto rounded-lg border border-line bg-bg p-4">
           <GraphView state={state.repo} />
         </div>
       </div>

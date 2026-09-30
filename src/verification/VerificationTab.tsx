@@ -39,7 +39,7 @@ export function VerificationTab() {
   }, []);
 
   if (result === null) {
-    return <p role="status" className="text-sm text-neutral-400">Loading verification report…</p>;
+    return <p role="status" className="text-sm text-fg-muted">Loading verification report…</p>;
   }
   return <VerificationContent {...result} />;
 }
@@ -49,7 +49,7 @@ export function VerificationContent({ report, error }: ReportLoadResult) {
     return (
       <section>
         <h1 className="text-lg font-semibold">Verification</h1>
-        <p role="status" className="mt-2 text-sm text-neutral-400">
+        <p role="status" className="mt-2 text-sm text-fg-muted">
           {error}
         </p>
       </section>
@@ -68,26 +68,26 @@ export function VerificationContent({ report, error }: ReportLoadResult) {
     <section className="space-y-5">
       <h1 className="text-lg font-semibold">Verification</h1>
       <dl className="grid gap-2 text-sm sm:grid-cols-2">
-        <div><dt className="text-neutral-400">Commit SHA</dt><dd className="break-all font-mono">{report.commitSha}</dd></div>
-        <div><dt className="text-neutral-400">Generated</dt><dd>{report.generatedAt}</dd></div>
-        <div><dt className="text-neutral-400">Git version</dt><dd>{report.gitVersion}</dd></div>
-        <div><dt className="text-neutral-400">Node version</dt><dd>{report.nodeVersion}</dd></div>
+        <div><dt className="text-fg-muted">Commit SHA</dt><dd className="break-all font-mono">{report.commitSha}</dd></div>
+        <div><dt className="text-fg-muted">Generated</dt><dd>{report.generatedAt}</dd></div>
+        <div><dt className="text-fg-muted">Git version</dt><dd>{report.gitVersion}</dd></div>
+        <div><dt className="text-fg-muted">Node version</dt><dd>{report.nodeVersion}</dd></div>
       </dl>
       <DiffTestSummary summary={report.diffTest} coverage={report.coverage} />
       {evidenceIssues.length > 0 && (
-        <p role="status" className="text-sm text-amber-300">
+        <p role="status" className="text-sm text-warning">
           Verification evidence incomplete: {evidenceIssues.join("; ")}.
         </p>
       )}
-      <section className="rounded border border-neutral-700 p-4" aria-label="Divergences">
+      <section className="rounded-lg border border-line bg-surface p-4" aria-label="Divergences">
         <h2 className="font-semibold">Divergences</h2>
         {report.divergences.length === 0 ? (
-          <p className="mt-2 text-sm text-neutral-400">No divergences recorded.</p>
+          <p className="mt-2 text-sm text-fg-muted">No divergences recorded.</p>
         ) : (
           <ul className="mt-2 space-y-3 text-sm">
             {[...report.divergences].sort((a, b) => Number(b.severity === "hard") - Number(a.severity === "hard")).map((item) => (
-              <li key={item.id} className="rounded bg-neutral-900 p-3">
-                <p className={item.severity === "hard" ? "font-medium text-red-300" : "font-medium text-amber-300"}>
+              <li key={item.id} className="rounded-md border border-line bg-bg p-3">
+                <p className={item.severity === "hard" ? "font-medium text-danger" : "font-medium text-warning"}>
                   {item.severity === "hard" ? "Hard divergence" : "Soft output warning"} · {item.id} · {item.kind}
                 </p>
                 <p className="mt-1 font-mono">{item.commands.join(" → ")}</p>

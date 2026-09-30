@@ -56,7 +56,7 @@ describe("GraphView", () => {
     expect(html.match(/data-ref-kind="branch"/g)).toHaveLength(2);
     expect(html).toContain('data-ref-kind="attached"');
     expect(html).not.toContain('data-ref-kind="detached"');
-    expect(html).toContain('fill="#92400e"');
+    expect(html).toContain('fill="var(--color-primary)"');
   });
 
   it("hiển thị detached HEAD tại commit thay vì gắn với branch", () => {
@@ -68,7 +68,7 @@ describe("GraphView", () => {
     expect(html).not.toContain("HEAD → main");
     expect(html).toContain('data-ref-kind="detached"');
     expect(html).not.toContain('data-ref-kind="attached"');
-    expect(html).toContain('fill="#b91c1c"');
+    expect(html).toContain('fill="var(--color-danger)"');
   });
 
   it("does not mutate RepoState when rendering animated nodes", () => {

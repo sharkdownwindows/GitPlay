@@ -43,7 +43,7 @@ export function GraphView({ state, width, height }: Props) {
             y1={from.y}
             x2={to.x}
             y2={to.y}
-            stroke="#64748b"
+            stroke="var(--color-edge)"
             strokeWidth={2}
           />
         );
@@ -59,8 +59,8 @@ export function GraphView({ state, width, height }: Props) {
         return (
           <g key={node.id} data-commit-id={node.id} className="graph-node"
             style={{ transform: `translate(${node.x}px, ${node.y}px)` }}>
-            <circle cx={0} cy={0} r={14} fill="#0f172a" stroke="#38bdf8" strokeWidth={2} />
-            <text x={0} y={4} textAnchor="middle" fontSize={10} fill="white">
+            <circle cx={0} cy={0} r={14} fill="var(--color-background)" stroke="var(--color-node)" strokeWidth={2} />
+            <text x={0} y={4} textAnchor="middle" fontSize={10} fill="var(--color-text)">
               {node.id}
             </text>
             {names.map((name, index) => (
