@@ -34,6 +34,7 @@ jobs:
           git --version | grep -Eq '^git version 2\.43\.'
           npm run report:full
       - name: Upload measured report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: verification
@@ -44,7 +45,7 @@ jobs:
 
   publish:
     needs: verification
-    if: github.ref == 'refs/heads/main'
+    if: needs.verification.result == 'success' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     permissions:
       contents: write

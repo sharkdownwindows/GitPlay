@@ -20,5 +20,13 @@ describe("public/verification.json", () => {
   it("rejects an incomplete report even when the schema version matches", () => {
     const { coverage: _coverage, ...incomplete } = fixture;
     expect(isVerificationReport(incomplete)).toBe(false);
+    expect(isVerificationReport({ ...fixture, diffTest: { ...fixture.diffTest, randomCases: undefined } })).toBe(false);
+    expect(isVerificationReport({ ...fixture, scaling: [{ label: "layout()", points: [{ n: 100 }] }] })).toBe(false);
+  });
+
+  it("requires a valid timestamp and full commit SHA", () => {
+    expect(isVerificationReport({ ...fixture, generatedAt: "" })).toBe(false);
+    expect(isVerificationReport({ ...fixture, commitSha: fixture.commitSha.slice(0, 7) })).toBe(false);
+    expect(isVerificationReport(fixture)).toBe(true);
   });
 });

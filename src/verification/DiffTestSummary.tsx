@@ -14,8 +14,8 @@ export function DiffTestSummary({ summary, coverage }: Props) {
       <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div><dt className="text-neutral-400">Total</dt><dd>{summary.totalCases}</dd></div>
         <div><dt className="text-neutral-400">Passed</dt><dd>{summary.passed}</dd></div>
-        <div><dt className="text-neutral-400">Failed</dt><dd>{summary.failed}</dd></div>
-        <div><dt className="text-neutral-400">Warnings</dt><dd>{summary.warnings}</dd></div>
+        <div><dt className="text-neutral-400">Failed (hard divergences)</dt><dd>{summary.failed}</dd></div>
+        <div><dt className="text-neutral-400">Warnings (soft output)</dt><dd>{summary.warnings}</dd></div>
       </dl>
       <p className="mt-3 text-sm text-neutral-400">
         Exhaustive depth: {summary.exhaustiveDepth} · Random cases: {summary.randomCases} ·
