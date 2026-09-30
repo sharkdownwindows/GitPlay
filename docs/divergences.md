@@ -2,13 +2,13 @@
 
 ## Run metadata
 
-Commit SHA: 37eddcade0522c00866f1d8616f59d3eef64189c
-Git version: git version 2.31.1.windows.1
+Commit SHA: 384d5849cb7def18669ca6822005410357a67c34
+Git version: git version 2.43.0
 Seed: 42
-Exhaustive depth: 2
-Cases: 133
+Exhaustive depth: 3
+Cases: 6160
 Hard failures: 0
-Output warnings: 50
+Output warnings: 19806
 Alphabet size: 15
 Fixtures: empty (setup 0), fork (setup 5)
 
@@ -20,15 +20,12 @@ No hard divergences observed; no harness-detected hard divergence has a verified
 
 ## Soft output differences
 
-### branch (10 warnings)
+### branch (3979 warnings)
 
 Representative command sequence:
 ```text
-git commit --allow-empty -m C0
+git commit --allow-empty -m C2
 git branch -- feature
-git switch -- feature
-git commit --allow-empty -m C1
-git checkout main
 git branch
 ```
 
@@ -46,7 +43,7 @@ Actual (GitScope):
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### checkout (12 warnings)
+### checkout (6125 warnings)
 
 Representative command sequence:
 ```text
@@ -56,7 +53,7 @@ git checkout c1
 
 Expected (Git):
 ```text
-Note: switching to 'fe71579b64908a49e729cc8cbb0071543d5b8fa7'.
+Note: switching to '9a9d5a8a3c036626161f264c56e069580ae32b1d'.
 
 You are in 'detached HEAD' state. You can look around, make experimental
 changes and commit them, and you can discard any commits you make in this
@@ -73,7 +70,7 @@ Or undo this operation with:
 
 Turn off this advice by setting config variable advice.detachedHead to false
 
-HEAD is now at fe71579 C2
+HEAD is now at 9a9d5a8 C2
 ```
 
 Actual (GitScope):
@@ -84,7 +81,7 @@ You are in 'detached HEAD' state.
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### commit (18 warnings)
+### commit (6125 warnings)
 
 Representative command sequence:
 ```text
@@ -93,7 +90,7 @@ git commit --allow-empty -m C2
 
 Expected (Git):
 ```text
-[main (root-commit) ccfbe27] C2
+[main (root-commit) 9a9d5a8] C2
 ```
 
 Actual (GitScope):
@@ -103,7 +100,7 @@ Actual (GitScope):
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### merge (9 warnings)
+### merge (1973 warnings)
 
 Representative command sequence:
 ```text
@@ -117,7 +114,7 @@ git merge -m "Merge branch 'feature'" -- feature
 
 Expected (Git):
 ```text
-Updating b8555c5..716f188
+Updating b2832ce..826797c
 Fast-forward (no commit created; -m option ignored)
 ```
 
@@ -129,7 +126,7 @@ Fast-forward
 
 Grouped by the command producing the output difference; other wording may differ within this group.
 
-### switch (1 warnings)
+### switch (1175 warnings)
 
 Representative command sequence:
 ```text
@@ -144,7 +141,7 @@ git switch -- feature
 
 Expected (Git):
 ```text
-Previous HEAD position was 867fe10 C0
+Previous HEAD position was b2832ce C0
 Switched to branch 'feature'
 ```
 
