@@ -31,9 +31,18 @@ jobs:
           echo /usr/bin >> "$GITHUB_PATH"
       - name: Install headless Chrome
         id: chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: stable
+          install-dependencies: true
+      - name: Verify Chrome executable
+        env:
+          GITSCOPE_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          test -n "$GITSCOPE_BROWSER"
+          test -f "$GITSCOPE_BROWSER"
+          test -x "$GITSCOPE_BROWSER"
+          "$GITSCOPE_BROWSER" --version
       - name: Measure browser render and animation
         env:
           GITSCOPE_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
@@ -43,7 +52,6 @@ jobs:
           git --version | grep -Eq '^git version 2\.43\.'
           npm run report:full
       - name: Upload measured report
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: verification

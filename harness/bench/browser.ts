@@ -1,5 +1,5 @@
 import { spawn, execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import os from "node:os";
 import path from "node:path";
@@ -7,22 +7,16 @@ import { setTimeout as delay } from "node:timers/promises";
 import { createServer } from "vite";
 import type { BrowserMeasurement, BrowserPoint } from "./browserMetrics";
 import { classifySaturation, percentile, RENDER_SATURATION_BUDGET_MS } from "./browserMetrics";
+import { ChromeProcessError, ChromeProcessMonitor, cleanupBrowserResources,
+  waitForChromeDebuggingPort } from "./chromeLifecycle";
 
 const smoke = process.argv.includes("--smoke");
 const chrome = process.env.GITSCOPE_BROWSER ?? (process.platform === "win32"
   ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" : "google-chrome");
 const profile = mkdtempSync(path.join(tmpdir(), "gitscope-browser-"));
-const server = await createServer({ server: { host: "127.0.0.1", port: 0 } });
+let server: Awaited<ReturnType<typeof createServer>> | undefined;
 let processHandle: ReturnType<typeof spawn> | undefined;
-
-async function waitForPort(): Promise<number> {
-  const file = path.join(profile, "DevToolsActivePort");
-  for (let i = 0; i < 100; i++) {
-    if (existsSync(file)) return Number(readFileSync(file, "utf8").split("\n")[0]);
-    await delay(100);
-  }
-  throw new Error("Chrome did not open its debugging port");
-}
+let processMonitor: ChromeProcessMonitor | undefined;
 
 async function connect(url: string) {
   const ws = new WebSocket(url);
@@ -84,13 +78,21 @@ async function measure(port: number, url: string, kind: "render" | "frame", n: n
 }
 
 try {
+  server = await createServer({ server: { host: "127.0.0.1", port: 0 } });
   await server.listen();
   const base = server.resolvedUrls!.local[0]!;
-  processHandle = spawn(chrome, ["--headless=new", "--no-first-run", "--no-default-browser-check",
+  const chromeArguments = ["--headless=new", "--no-first-run", "--no-default-browser-check",
     "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--window-size=1280,800",
-    "--force-device-scale-factor=1", "--remote-allow-origins=*", "about:blank"],
-  { stdio: "ignore", windowsHide: true });
-  const port = await waitForPort();
+    "--force-device-scale-factor=1", "--remote-allow-origins=*"];
+  if (process.platform === "linux") {
+    chromeArguments.push("--no-sandbox", "--disable-dev-shm-usage",
+      "--remote-debugging-address=127.0.0.1");
+  }
+  chromeArguments.push("about:blank");
+  processHandle = spawn(chrome, chromeArguments,
+    { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
+  processMonitor = new ChromeProcessMonitor(chrome, processHandle);
+  const port = await waitForChromeDebuggingPort(profile, processMonitor);
   const browserInfo = await fetch(`http://127.0.0.1:${port}/json/version`).then((r) => r.json()) as { Browser: string };
   const commitSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
   const renderSizes = smoke ? [20] : [100, 1_000, 10_000];
@@ -140,16 +142,18 @@ try {
   } else {
     writeFileSync("harness/bench/browser-results.json", `${JSON.stringify(result, null, 2)}\n`);
   }
-} finally {
-  processHandle?.kill();
-  await server.close();
-  await delay(1000);
-  const resolved = realpathSync(profile);
-  const tempRoot = realpathSync(tmpdir()) + path.sep;
-  if (!resolved.startsWith(tempRoot)) throw new Error("Browser profile escaped temp directory");
-  try {
-    rmSync(resolved, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
-  } catch (error) {
-    console.warn(`Could not remove temporary Chrome profile: ${String(error)}`);
+} catch (error) {
+  if (error instanceof ChromeProcessError) throw error;
+  if (processMonitor?.failure) {
+    throw processMonitor.error(`Chrome failed during the browser benchmark: ${String(error)}`);
   }
+  throw error;
+} finally {
+  const runningServer = server;
+  await cleanupBrowserResources({
+    processHandle,
+    closeServer: runningServer ? () => runningServer.close() : undefined,
+    profile,
+  });
+  processMonitor?.dispose();
 }
