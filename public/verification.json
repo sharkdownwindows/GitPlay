@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T01:04:07.240Z",
-  "commitSha": "384d5849cb7def18669ca6822005410357a67c34",
+  "generatedAt": "2026-09-30T07:07:11.606Z",
+  "commitSha": "b23baadb0f9d662226ef42a7cccc6feb4674f5b7",
   "gitVersion": "git version 2.43.0",
   "nodeVersion": "v24.21.0",
   "diffTest": {
@@ -12,7 +12,7 @@
     "exhaustiveDepth": 3,
     "randomCases": 5000,
     "seed": 42,
-    "durationMs": 1085485.060913
+    "durationMs": 807585.7031879999
   },
   "coverage": {
     "commit": 5938,
@@ -27,27 +27,61 @@
       "points": [
         {
           "n": 100,
-          "medianMs": 0.23121099988929927,
-          "p95Ms": 0.367094999877736,
+          "medianMs": 0.20967500004917383,
+          "p95Ms": 0.2811109999893233,
           "iterations": 7
         },
         {
           "n": 1000,
-          "medianMs": 1.1332729998975992,
-          "p95Ms": 1.4601929998025298,
+          "medianMs": 1.0955629999516532,
+          "p95Ms": 1.5692910000216216,
           "iterations": 7
         },
         {
           "n": 10000,
-          "medianMs": 12.258820000104606,
-          "p95Ms": 18.258021000074223,
+          "medianMs": 12.661335999961011,
+          "p95Ms": 18.271097999997437,
           "iterations": 7
         },
         {
           "n": 100000,
-          "medianMs": 217.33309600013308,
-          "p95Ms": 229.79594600014389,
+          "medianMs": 210.80448100005742,
+          "p95Ms": 226.1471039999742,
           "iterations": 7
+        }
+      ]
+    },
+    {
+      "label": "SVG render",
+      "points": [
+        {
+          "n": 100,
+          "medianMs": 32.20000000001164,
+          "p95Ms": 32.60000000000582,
+          "iterations": 5
+        },
+        {
+          "n": 1000,
+          "medianMs": 117.20000000001164,
+          "p95Ms": 151.89999999999418,
+          "iterations": 5
+        },
+        {
+          "n": 10000,
+          "medianMs": 1410.7000000000116,
+          "p95Ms": 1549.7999999999884,
+          "iterations": 5
+        }
+      ]
+    },
+    {
+      "label": "animation frame",
+      "points": [
+        {
+          "n": 200,
+          "medianMs": 16.699999999999818,
+          "p95Ms": 16.700000000000728,
+          "iterations": 220
         }
       ]
     }
