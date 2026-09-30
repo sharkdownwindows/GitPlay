@@ -10,6 +10,8 @@ export interface RawGitState {
   commits: RawGitCommit[];
   branches: Record<string, string>;
   head: { detached: false; ref: string } | { detached: true; hash: string };
+  /** Hashes in creation order, including commits no longer reachable by a ref. */
+  creationOrder: string[];
 }
 export interface RealStep { command: AbstractCommand; result: GitInvocation; state: RawGitState }
 export interface RealRun { steps: RealStep[]; state: RawGitState; gitVersion: string; tempDirectory: string }
@@ -23,8 +25,8 @@ const gitEnvironment = {
   GIT_TERMINAL_PROMPT: "0",
 };
 
-function invoke(cwd: string, args: string[]): GitInvocation {
-  const result = spawnSync("git", args, { cwd, env: gitEnvironment, encoding: "utf8", shell: false });
+function invoke(cwd: string, args: string[], environment: Record<string, string> = {}): GitInvocation {
+  const result = spawnSync("git", args, { cwd, env: { ...gitEnvironment, ...environment }, encoding: "utf8", shell: false });
   if (result.error) throw result.error;
   return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}`.trim() };
 }
@@ -44,6 +46,7 @@ export function isPinnedGit(version: string): boolean {
 }
 
 function readState(cwd: string, knownHashes: Iterable<string>): RawGitState {
+  const creationOrder = [...knownHashes];
   const branches: Record<string, string> = Object.create(null);
   for (const line of required(cwd, ["for-each-ref", "--format=%(refname:short)%00%(objectname)", "refs/heads"]).split("\n")) {
     if (!line) continue;
@@ -54,7 +57,7 @@ function readState(cwd: string, knownHashes: Iterable<string>): RawGitState {
   const head = symbolic.status === 0
     ? { detached: false as const, ref: symbolic.output }
     : { detached: true as const, hash: required(cwd, ["rev-parse", "HEAD"]) };
-  const logArgs = ["log", "-z", "--all", ...(head.detached ? ["HEAD"] : []), ...knownHashes,
+  const logArgs = ["log", "-z", "--all", ...(head.detached ? ["HEAD"] : []), ...creationOrder,
     "--format=%H%x00%P%x00%B"];
   const commits: RawGitCommit[] = [];
   const seen = new Set<string>();
@@ -67,7 +70,7 @@ function readState(cwd: string, knownHashes: Iterable<string>): RawGitState {
     seen.add(hash);
     commits.push({ hash, message, parents: parentText ? parentText.split(" ") : [] });
   }
-  return { commits, branches, head };
+  return { commits, branches, head, creationOrder };
 }
 
 /** Each call owns and removes its repository, including when Git or parsing fails. */
@@ -84,12 +87,16 @@ export function runReal(commands: readonly AbstractCommand[], read: typeof readS
     for (const command of commands) {
       const args = gitArgs(command, (target) => hashes.get(target) ?? target,
         (name) => Object.hasOwn(state.branches, name));
-      const result = invoke(directory, args);
+      // Distinct deterministic seconds prevent identical repeated merges from
+      // collapsing to one Git object hash during a fast harness run.
+      const date = new Date(Date.UTC(2020, 0, 1) + steps.length * 1000).toISOString();
+      const result = invoke(directory, args, { GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date });
       state = read(directory, hashes.values());
       if (result.status === 0 && (command.kind === "commit" || command.kind === "merge")) {
         const headHash = state.head.detached ? state.head.hash : state.branches[state.head.ref];
         if (headHash && ![...hashes.values()].includes(headHash)) hashes.set(`c${hashes.size + 1}`, headHash);
       }
+      state.creationOrder = [...hashes.values()];
       steps.push({ command, result, state });
     }
     return { steps, state: read(directory, hashes.values()), gitVersion: version, tempDirectory: directory };

@@ -12,21 +12,37 @@ interface SourceCommit { id: string; message: string; parents: string[] }
 function normalize(
   commits: SourceCommit[], branches: Record<string, string>,
   head: { detached: false; ref: string } | { detached: true; commit: string },
+  creationOrder: string[],
 ): NormalizedState {
-  const names = new Map<string, string>();
+  const byId = new Map(commits.map((commit) => [commit.id, commit]));
+  if (byId.size !== commits.length) throw new Error("Duplicate commit ID");
+  const counts = new Map<string, number>();
   for (const commit of commits) {
-    if (names.has(commit.message)) throw new Error(`Duplicate commit message: ${commit.message}`);
-    names.set(commit.message, commit.id);
+    counts.set(commit.message, (counts.get(commit.message) ?? 0) + 1);
   }
-  const messages = new Map([...names].map(([message, id]) => [id, message]));
+  if (creationOrder.length !== commits.length || new Set(creationOrder).size !== commits.length) {
+    throw new Error("Incomplete commit creation order");
+  }
+  const occurrences = new Map<string, number>();
+  const messages = new Map<string, string>();
+  for (const id of creationOrder) {
+    const commit = byId.get(id);
+    if (!commit) throw new Error(`Unresolved commit order: ${id}`);
+    const occurrence = (occurrences.get(commit.message) ?? 0) + 1;
+    occurrences.set(commit.message, occurrence);
+    // A message remains the label when unique. Repeated merge messages gain
+    // a creation-order ordinal; NUL cannot occur in a Git commit message.
+    messages.set(id, counts.get(commit.message) === 1
+      ? commit.message : `${commit.message}\0${occurrence}`);
+  }
   const resolve = (id: string): string => {
     const message = messages.get(id);
     if (message === undefined) throw new Error(`Unresolved commit: ${id}`);
     return message;
   };
   const normalizedCommits: Record<string, string[]> = Object.create(null);
-  for (const commit of [...commits].sort((a, b) => a.message.localeCompare(b.message))) {
-    normalizedCommits[commit.message] = commit.parents.map(resolve);
+  for (const commit of [...commits].sort((a, b) => resolve(a.id).localeCompare(resolve(b.id)))) {
+    normalizedCommits[resolve(commit.id)] = commit.parents.map(resolve);
   }
   const normalizedBranches: Record<string, string> = Object.create(null);
   for (const name of Object.keys(branches).sort()) normalizedBranches[name] = resolve(branches[name]!);
@@ -44,12 +60,12 @@ export function normalizeEngine(state: RepoState): NormalizedState {
   return normalize(Object.values(state.commits), state.branches,
     state.head.detached
       ? { detached: true, commit: state.head.commit ?? "" }
-      : { detached: false, ref: state.head.ref ?? "" });
+      : { detached: false, ref: state.head.ref ?? "" }, Object.keys(state.commits));
 }
 
 export function normalizeReal(state: RawGitState): NormalizedState {
   return normalize(state.commits.map((commit) => ({ id: commit.hash, message: commit.message, parents: commit.parents })),
     state.branches, state.head.detached
       ? { detached: true, commit: state.head.hash }
-      : { detached: false, ref: state.head.ref });
+      : { detached: false, ref: state.head.ref }, state.creationOrder);
 }

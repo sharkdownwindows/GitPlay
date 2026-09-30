@@ -3,9 +3,52 @@ import { formatDivergenceLog, gitErrorClass, runDifferential } from "./run";
 import { runEngine } from "./adapter";
 import { runReal } from "./runReal";
 import { normalizeEngine, normalizeReal } from "./normalize";
-import { generateInvalidSequences } from "./generate";
+import { generateInvalidSequences, generateRandomSequences } from "./generate";
 
 describe("differential runner", () => {
+  it("keeps two valid merge commits with the same message distinct", () => {
+    const commands = [
+      { kind: "commit" as const, message: "root" },
+      { kind: "branch" as const, name: "feature" },
+      { kind: "commit" as const, message: "main" },
+      { kind: "switch" as const, target: "feature", detach: false, create: false },
+      { kind: "commit" as const, message: "feature" },
+      { kind: "merge" as const, branch: "main" },
+      { kind: "checkout" as const, target: "c1", create: false },
+      { kind: "commit" as const, message: "detached" },
+      { kind: "merge" as const, branch: "main" },
+    ];
+    const testCase = { fixture: "repeated-merge", setupLength: 0, suffix: commands, commands };
+    const result = runDifferential(0, runEngine, runReal, [testCase]);
+    expect(runEngine(commands).steps.every((step) => step.result.ok)).toBe(true);
+    expect(result.summary).toMatchObject({ totalCases: 1, passed: 1, failed: 0 });
+    expect(result.divergences.filter((item) => item.severity === "hard")).toEqual([]);
+  });
+
+  it("replays the first failing seed-42 random case without a hard divergence", () => {
+    const testCase = generateRandomSequences(151, 42)[150]!;
+    const result = runDifferential(0, runEngine, runReal, [testCase]);
+    expect(result.summary).toMatchObject({ totalCases: 1, passed: 1, failed: 0 });
+  });
+
+  it("keeps repeated merges with identical parents as separate Git objects", () => {
+    const commands = [
+      { kind: "commit" as const, message: "root" },
+      { kind: "branch" as const, name: "feature" },
+      { kind: "switch" as const, target: "feature", detach: false, create: false },
+      { kind: "commit" as const, message: "feature" },
+      { kind: "checkout" as const, target: "c1", create: false },
+      { kind: "commit" as const, message: "detached" },
+      { kind: "merge" as const, branch: "feature" },
+      { kind: "checkout" as const, target: "c3", create: false },
+      { kind: "merge" as const, branch: "feature" },
+    ];
+    const real = runReal(commands);
+    expect(real.steps[6]!.state.head).not.toEqual(real.steps[8]!.state.head);
+    const testCase = { fixture: "repeat-same-parents", setupLength: 0, suffix: commands, commands };
+    expect(runDifferential(0, runEngine, runReal, [testCase]).summary.failed).toBe(0);
+  });
+
   it("classifies an unborn branch creation failure", () => {
     expect(gitErrorClass({ kind: "branch", name: "feature" },
       { status: 128, output: "fatal: Not a valid object name: 'main'." })).toBe("NoCommitsYet");
