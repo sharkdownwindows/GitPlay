@@ -95,10 +95,10 @@ export function isVerificationReport(value: unknown): value is VerificationRepor
 
   return (
     r.schemaVersion === SCHEMA_VERSION &&
-    typeof r.generatedAt === "string" &&
-    typeof r.commitSha === "string" &&
-    typeof r.gitVersion === "string" &&
-    typeof r.nodeVersion === "string" &&
+    typeof r.generatedAt === "string" && !Number.isNaN(Date.parse(r.generatedAt)) &&
+    typeof r.commitSha === "string" && /^[0-9a-f]{40}$/i.test(r.commitSha) &&
+    typeof r.gitVersion === "string" && r.gitVersion.length > 0 &&
+    typeof r.nodeVersion === "string" && r.nodeVersion.length > 0 &&
     hasNumbers(r.diffTest, [
       "totalCases", "passed", "failed", "warnings", "exhaustiveDepth",
       "randomCases", "seed", "durationMs",

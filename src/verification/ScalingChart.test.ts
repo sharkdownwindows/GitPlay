@@ -30,11 +30,14 @@ describe("ScalingChart", () => {
     ]);
     expect(html).toContain('data-series="A"');
     expect(html).toContain('data-series="B"');
+    expect(html).toContain('aria-label="A scaling chart"');
+    expect(html).toContain('aria-label="B scaling chart"');
     expect(html).toContain('cx="68"');
     expect(html).toContain('cx="339"');
     expect(html).toContain('cx="610"');
     expect(html.match(/<circle/g)).toHaveLength(6);
-    expect(html).toContain("Median (ms): solid");
-    expect(html).toContain("p95 (ms): dashed");
+    expect(html).toContain("Median: solid blue");
+    expect(html).toContain("p95: dashed amber");
+    expect(html).toContain("Iterations");
   });
 });
