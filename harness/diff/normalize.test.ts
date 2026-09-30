@@ -19,17 +19,19 @@ describe("DAG normalization", () => {
       ],
       branches: { feature: "aaa", main: "ccc" },
       head: { detached: false as const, ref: "main" },
+      creationOrder: ["aaa", "bbb", "ccc"],
     };
     expect(normalizeReal(real)).toEqual(normalizeEngine(engine));
     expect(normalizeReal({ ...real, commits: [{ ...real.commits[0]!, parents: ["aaa", "bbb"] }, ...real.commits.slice(1)] }))
       .not.toEqual(normalizeEngine(engine));
   });
 
-  it("rejects duplicate messages and unresolved references", () => {
+  it("distinguishes repeated messages and rejects unresolved references", () => {
     const state = emptyState();
     state.commits.c1 = { id: "c1", message: "same", parents: [], timestamp: "" };
     state.commits.c2 = { id: "c2", message: "same", parents: ["c1"], timestamp: "" };
-    expect(() => normalizeEngine(state)).toThrow("Duplicate commit message");
+    state.branches.main = "c2";
+    expect(Object.keys(normalizeEngine(state).commits)).toEqual(["same\0" + "1", "same\0" + "2"]);
     state.commits.c2.message = "other";
     state.branches.main = "missing";
     expect(() => normalizeEngine(state)).toThrow("Unresolved commit");

@@ -94,6 +94,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   console.log(`Exhaustive depth ${depth}: ${exhaustive.summary.passed}/${exhaustive.summary.totalCases}, ${exhaustive.summary.durationMs.toFixed(0)} ms`);
   console.log(`Random seed ${SEED}, max depth 20: ${random.summary.passed}/${random.summary.totalCases}, ${random.summary.durationMs.toFixed(0)} ms`);
   console.log(`Invalid transitions: ${invalid.summary.passed}/${invalid.summary.totalCases}, ${invalid.summary.durationMs.toFixed(0)} ms`);
+  for (const divergence of diff.divergences.filter((item) => item.severity === "hard")) {
+    console.error(JSON.stringify(divergence));
+  }
   if (exhaustive.summary.failed > 0 || random.summary.passed / Math.max(1, randomCount) < (full ? 0.999 : 0) ||
       invalid.summary.failed > 0) process.exitCode = 1;
 }
