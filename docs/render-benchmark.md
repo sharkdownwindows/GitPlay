@@ -20,30 +20,32 @@ samples. Each browser case has a 30-second timeout, recorded as `timeout`
 rather than as a made-up scaling point.
 
 The observed saturation rule for SVG render is p95 > 100 ms or timeout.
-The animation target is p95 <= 16.7 ms. The run on 2026-09-29 at
-`5c3084e93ca5d772a5d0e89bf0ce3384b1890d73` used headless Chrome
-154.0.8037.57 on Windows 10.0.26200 x64, Node v24.16.0 and Git
-2.31.1.windows.1. SVG render p95 was 32.6, 150.3 and 1613.5 ms at n=100,
-1,000 and 10,000. Saturation began at n=1,000. At n=200, 215 frame
-intervals had p95 16.8 ms. Browser layout p95 for those four sizes was
-0.3, 1.7, 17.9 and 0.4 ms respectively. These numbers describe one local
-headless run using Vite's development server; repeat on the deployment browser
-and hardware before treating the threshold crossing as a user-facing regression.
-The SVG extends far below the 1280x800 viewport at larger n, so the render
-measurement covers DOM construction and browser scheduling but cannot prove
-that every offscreen node was rasterized.
+The animation target is p95 <= 16.7 ms. Nightly Verification run
+[36685786989](https://github.com/sharkdownwindows/GitPlay/actions/runs/36685786989)
+measured source SHA `4448efb8aaecea310266c3ab002b6928362db466` with headless
+Chrome 154.0.8037.92 on Linux x64, Node 24 and Git 2.43.0. SVG render p95
+was 32.3, 206.3 and 1744.9 ms at n=100, 1,000 and 10,000. Saturation began
+at n=1,000. At n=200, 220 frame intervals had p95 16.7 ms. Browser layout
+p95 for those four sizes was 0.3, 3.8, 19.0 and 0.5 ms respectively. These
+numbers describe one headless CI run using Vite's development server; repeat
+on the deployment browser and production build before treating the threshold
+as a user-facing regression. The SVG extends far below the 1280x800 viewport
+at larger n, so the render measurement covers DOM construction and browser
+scheduling but cannot prove that every offscreen node was rasterized.
 
-## Draft optimization issue (not posted)
+## Open follow-up: production build recheck
 
 **Title:** Inspect graph animation frame budget at 200 commits
 
-**Observation:** Ten measured 199-to-200-commit `GraphView` animations produced
-215 frame intervals with p95 16.8 ms, slightly above the 16.7 ms target. The
-separately measured layout p95 was 0.4 ms. Chrome 154 headless, Windows
-10.0.26200 x64, viewport 1280x800 at 1x; raw samples and metadata are in
-`harness/bench/browser-results.json`.
+**Observation:** Ten measured 199-to-200-commit `GraphView` animations in
+Nightly Verification produced 220 frame intervals with p95 16.7 ms, at the
+16.7 ms target. GitHub issue [#47](https://github.com/sharkdownwindows/GitPlay/issues/47)
+tracks a production-build recheck of an earlier local 16.8 ms result. The CI
+measurement used Chrome 154 headless on Linux x64, viewport 1280x800 at 1x;
+raw samples and metadata are in the workflow artifact.
 
-**Reproduction:** On this commit run `npm run bench:browser`; inspect the
-`frame` and `layout` arrays in the output JSON. Repeat on a visible browser
-and deployment build to distinguish display cadence and headless scheduling
-from application work. Do not optimize until the excess is reproduced there.
+**Reproduction:** The current `npm run bench:browser` starts Vite's development
+server. Measure the equivalent animation using the production bundle, then
+repeat on a visible browser and deployment hardware to distinguish display
+cadence and headless scheduling from application work. Do not optimize until
+the excess is reproduced there.
