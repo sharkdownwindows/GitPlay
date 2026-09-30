@@ -19,10 +19,13 @@ export interface BrowserMeasurement {
   animationRuns: number;
   viewport: string;
   mode: "headless";
+  saturationPoint: { metric: "SVG render"; n: number } | null;
   render: BrowserPoint[];
   frame: BrowserPoint[];
   layout: BrowserPoint[];
 }
+
+export const RENDER_SATURATION_BUDGET_MS = 100;
 
 export function percentile(samples: readonly number[], quantile: number): number {
   if (!samples.length || samples.some((n) => !Number.isFinite(n) || n < 0) || quantile < 0 || quantile > 1) {
@@ -46,13 +49,40 @@ export function toScalingSeries(label: string, points: readonly BrowserPoint[]):
 export function browserSeriesForReport(value: unknown, commitSha: string): ScalingSeries[] {
   if (!value || typeof value !== "object") throw new Error("Invalid browser measurement");
   const measurement = value as BrowserMeasurement;
-  if (measurement.commitSha !== commitSha) return [];
+  if (measurement.commitSha !== commitSha) throw new Error("Browser measurement commit SHA does not match the report source");
+  if (!/^[0-9a-f]{40}$/.test(measurement.commitSha) ||
+      typeof measurement.generatedAt !== "string" || Number.isNaN(Date.parse(measurement.generatedAt)) ||
+      typeof measurement.browser !== "string" || measurement.browser.length === 0 ||
+      typeof measurement.os !== "string" || measurement.os.length === 0 ||
+      typeof measurement.nodeVersion !== "string" || !/^v\d+\.\d+/.test(measurement.nodeVersion) ||
+      typeof measurement.gitVersion !== "string" || !/^git version \d+\.\d+/.test(measurement.gitVersion) ||
+      !Number.isSafeInteger(measurement.seed) ||
+      !Number.isSafeInteger(measurement.renderIterations) || measurement.renderIterations < 1 ||
+      !Number.isSafeInteger(measurement.animationRuns) || measurement.animationRuns < 1 ||
+      measurement.mode !== "headless" ||
+      !measurement.warmups || !Number.isSafeInteger(measurement.warmups.render) ||
+      measurement.warmups.render < 0 || !Number.isSafeInteger(measurement.warmups.frame) ||
+      measurement.warmups.frame < 0) {
+    throw new Error("Invalid browser measurement metadata");
+  }
   if (!Array.isArray(measurement.render) || !Array.isArray(measurement.frame) ||
-      !measurement.render.every(validPoint) || !measurement.frame.every(validPoint)) {
+      !Array.isArray(measurement.layout) || !measurement.render.every(validPoint) ||
+      !measurement.frame.every(validPoint) || !measurement.layout.every(validPoint) ||
+      measurement.render.some((point) => point.status === "ok" && point.samplesMs.length !== measurement.renderIterations) ||
+      measurement.frame.length === 0 || measurement.frame.some((point) => point.n !== 200) ||
+      measurement.frame.every((point) => point.status === "timeout")) {
     throw new Error("Invalid browser measurement points");
   }
-  return [toScalingSeries("SVG render", measurement.render),
-    toScalingSeries("animation frame", measurement.frame)].filter((series) => series.points.length > 0);
+  const saturationPoint = measurement.render.filter((point) =>
+    classifySaturation(point, RENDER_SATURATION_BUDGET_MS)).sort((a, b) => a.n - b.n)[0];
+  const expectedSaturation = saturationPoint ? { metric: "SVG render" as const, n: saturationPoint.n } : null;
+  if (JSON.stringify(measurement.saturationPoint) !== JSON.stringify(expectedSaturation)) {
+    throw new Error("Browser measurement saturation point does not match its samples");
+  }
+  const series = [toScalingSeries("SVG render", measurement.render),
+    toScalingSeries("animation frame", measurement.frame)].filter((item) => item.points.length > 0);
+  if (series.length !== 2) throw new Error("Browser measurement is missing SVG render or animation frame samples");
+  return series;
 }
 
 function validPoint(point: BrowserPoint): boolean {

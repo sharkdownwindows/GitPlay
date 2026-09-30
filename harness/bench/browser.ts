@@ -6,8 +6,9 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { createServer } from "vite";
 import type { BrowserMeasurement, BrowserPoint } from "./browserMetrics";
-import { classifySaturation, percentile } from "./browserMetrics";
+import { classifySaturation, percentile, RENDER_SATURATION_BUDGET_MS } from "./browserMetrics";
 
+const smoke = process.argv.includes("--smoke");
 const chrome = process.env.GITSCOPE_BROWSER ?? (process.platform === "win32"
   ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" : "google-chrome");
 const profile = mkdtempSync(path.join(tmpdir(), "gitscope-browser-"));
@@ -92,30 +93,53 @@ try {
   const port = await waitForPort();
   const browserInfo = await fetch(`http://127.0.0.1:${port}/json/version`).then((r) => r.json()) as { Browser: string };
   const commitSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+  const renderSizes = smoke ? [20] : [100, 1_000, 10_000];
+  const frameSize = smoke ? 20 : 200;
+  const renderWarmups = 1;
+  const renderIterations = smoke ? 2 : 5;
+  const frameWarmups = smoke ? 1 : 2;
+  const animationRuns = smoke ? 2 : 10;
+  const animationMs = smoke ? 50 : 350;
   const result: BrowserMeasurement = {
     commitSha, generatedAt: new Date().toISOString(), browser: browserInfo.Browser,
     os: `${os.platform()} ${os.release()} ${os.arch()}`,
     nodeVersion: process.version,
     gitVersion: execFileSync("git", ["--version"], { encoding: "utf8" }).trim(),
-    seed: 42, warmups: { render: 1, frame: 2 }, renderIterations: 5,
-    animationRuns: 10, viewport: "1280x800@1x", mode: "headless",
+    seed: 42, warmups: { render: renderWarmups, frame: frameWarmups }, renderIterations,
+    animationRuns, viewport: "1280x800@1x", mode: "headless", saturationPoint: null,
     render: [], frame: [], layout: [],
   };
-  for (const n of [100, 1_000, 10_000]) {
-    const url = `${base}harness/bench/browser.html?mode=render&n=${n}`;
+  for (const n of renderSizes) {
+    const params = new URLSearchParams({ mode: "render", n: String(n),
+      renderWarmups: String(renderWarmups), renderIterations: String(renderIterations) });
+    const url = `${base}harness/bench/browser.html?${params}`;
     const measured = await measure(port, url, "render", n, 30_000);
     result.render.push(measured.point);
     result.layout.push(measured.layout);
     console.log(`SVG render n=${n}: ${measured.point.status}${measured.point.samplesMs.length
       ? ` median=${percentile(measured.point.samplesMs, 0.5).toFixed(2)} p95=${percentile(measured.point.samplesMs, 0.95).toFixed(2)} ms` : ""}`);
   }
-  const frame = await measure(port, `${base}harness/bench/browser.html?mode=frame&n=200`, "frame", 200, 30_000);
+  const frameParams = new URLSearchParams({ mode: "frame", n: String(frameSize),
+    frameWarmups: String(frameWarmups), animationRuns: String(animationRuns), animationMs: String(animationMs) });
+  const frame = await measure(port, `${base}harness/bench/browser.html?${frameParams}`, "frame", frameSize, 30_000);
   result.frame.push(frame.point);
   result.layout.push(frame.layout);
-  console.log(`Animation frames n=200: ${frame.point.status}${frame.point.samplesMs.length
+  const saturation = result.render.filter((point) =>
+    classifySaturation(point, RENDER_SATURATION_BUDGET_MS)).sort((a, b) => a.n - b.n)[0];
+  result.saturationPoint = saturation ? { metric: "SVG render", n: saturation.n } : null;
+  console.log(`Animation frames n=${frameSize}: ${frame.point.status}${frame.point.samplesMs.length
     ? ` p95=${percentile(frame.point.samplesMs, 0.95).toFixed(2)} ms, ${frame.point.samplesMs.length} frames` : ""}`);
   console.log(`Frame budget exceeded: ${classifySaturation(frame.point, 16.7)}`);
-  writeFileSync("harness/bench/browser-results.json", `${JSON.stringify(result, null, 2)}\n`);
+  console.log(`SVG saturation point (p95 > ${RENDER_SATURATION_BUDGET_MS} ms or timeout): ${result.saturationPoint?.n ?? "none"}`);
+  if (smoke) {
+    if (result.render.some((point) => point.status !== "ok" || point.samplesMs.length !== renderIterations) ||
+        frame.point.status !== "ok" || frame.point.samplesMs.length === 0) {
+      throw new Error("Browser smoke measurement did not produce all requested samples");
+    }
+    console.log(`Browser smoke passed: Chrome=${result.browser}; SHA=${result.commitSha}; renderSamples=${renderIterations}; frameSamples=${frame.point.samplesMs.length}`);
+  } else {
+    writeFileSync("harness/bench/browser-results.json", `${JSON.stringify(result, null, 2)}\n`);
+  }
 } finally {
   processHandle?.kill();
   await server.close();

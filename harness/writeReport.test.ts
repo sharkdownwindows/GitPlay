@@ -54,4 +54,20 @@ describe("verification report generator", () => {
     expect(passesReportGate(exhaustive, { ...random,
       summary: { ...random.summary, passed: 4995, failed: 5 } }, base, true)).toBe(true);
   });
+
+  it("requires all browser series for a full report", () => {
+    const diff = runDifferential(0);
+    const fullDiff = { ...diff, summary: { ...diff.summary, totalCases: 6_160, passed: 6_160,
+      failed: 0, exhaustiveDepth: 3, randomCases: 5_000, seed: 42 } };
+    const layout = { label: "layout()", points: [100, 1000, 10000, 100000].map((n) =>
+      ({ n, medianMs: 1, p95Ms: 2, iterations: 7 })) };
+    const incomplete = makeVerificationReport(fullDiff, layout);
+    expect(() => validateGeneratedReport(incomplete, true)).toThrow(/Invalid generated verification report/);
+    const complete = makeVerificationReport(fullDiff, layout, [
+      { label: "SVG render", points: [{ n: 100, medianMs: 20, p95Ms: 30, iterations: 5 }] },
+      { label: "animation frame", points: [{ n: 200, medianMs: 16.6, p95Ms: 16.7, iterations: 215 }] },
+    ]);
+    expect(() => validateGeneratedReport(complete, true)).not.toThrow();
+    expect(() => validateGeneratedReport(complete)).not.toThrow();
+  });
 });
