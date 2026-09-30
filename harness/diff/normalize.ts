@@ -15,9 +15,9 @@ function normalize(
   creationOrder: string[],
 ): NormalizedState {
   const byId = new Map(commits.map((commit) => [commit.id, commit]));
+  if (byId.size !== commits.length) throw new Error("Duplicate commit ID");
   const counts = new Map<string, number>();
   for (const commit of commits) {
-    if (byId.size !== commits.length) throw new Error(`Duplicate commit ID: ${commit.id}`);
     counts.set(commit.message, (counts.get(commit.message) ?? 0) + 1);
   }
   if (creationOrder.length !== commits.length || new Set(creationOrder).size !== commits.length) {

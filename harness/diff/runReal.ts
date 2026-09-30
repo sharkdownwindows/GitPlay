@@ -25,8 +25,8 @@ const gitEnvironment = {
   GIT_TERMINAL_PROMPT: "0",
 };
 
-function invoke(cwd: string, args: string[]): GitInvocation {
-  const result = spawnSync("git", args, { cwd, env: gitEnvironment, encoding: "utf8", shell: false });
+function invoke(cwd: string, args: string[], environment: Record<string, string> = {}): GitInvocation {
+  const result = spawnSync("git", args, { cwd, env: { ...gitEnvironment, ...environment }, encoding: "utf8", shell: false });
   if (result.error) throw result.error;
   return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}`.trim() };
 }
@@ -87,7 +87,10 @@ export function runReal(commands: readonly AbstractCommand[], read: typeof readS
     for (const command of commands) {
       const args = gitArgs(command, (target) => hashes.get(target) ?? target,
         (name) => Object.hasOwn(state.branches, name));
-      const result = invoke(directory, args);
+      // Distinct deterministic seconds prevent identical repeated merges from
+      // collapsing to one Git object hash during a fast harness run.
+      const date = new Date(Date.UTC(2020, 0, 1) + steps.length * 1000).toISOString();
+      const result = invoke(directory, args, { GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date });
       state = read(directory, hashes.values());
       if (result.status === 0 && (command.kind === "commit" || command.kind === "merge")) {
         const headHash = state.head.detached ? state.head.hash : state.branches[state.head.ref];

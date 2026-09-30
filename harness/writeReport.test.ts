@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { isVerificationReport } from "../src/verification/report";
 import { runDifferential } from "./diff/run";
-import { combineValidResults, makeVerificationReport, validateGeneratedReport } from "./writeReport";
+import { combineValidResults, makeVerificationReport, passesReportGate,
+  printHardDivergences, validateGeneratedReport } from "./writeReport";
 
 describe("verification report generator", () => {
   it("uses measured differential metadata and supplied scaling data", () => {
@@ -37,5 +38,20 @@ describe("verification report generator", () => {
     expect(combined.summary.totalCases).toBe(exhaustive.summary.totalCases);
     expect(combined.summary.seed).toBe(42);
     expect(combined.summary.randomCases).toBe(0);
+  });
+
+  it("prints hard divergences and rejects the observed random pass rate", () => {
+    const base = runDifferential(0);
+    const hard = { id: "d1", kind: "state" as const, severity: "hard" as const,
+      commands: ["git merge feature"], expected: "Git", actual: "GitScope" };
+    const soft = { ...hard, id: "d2", kind: "output" as const, severity: "soft" as const };
+    const write = vi.fn();
+    printHardDivergences({ ...base, divergences: [hard, soft] }, write);
+    expect(write).toHaveBeenCalledExactlyOnceWith(JSON.stringify(hard));
+    const exhaustive = { ...base, summary: { ...base.summary, totalCases: 1160, passed: 1160, failed: 0 } };
+    const random = { ...base, summary: { ...base.summary, totalCases: 5000, passed: 4969, failed: 31 } };
+    expect(passesReportGate(exhaustive, random, base, true)).toBe(false);
+    expect(passesReportGate(exhaustive, { ...random,
+      summary: { ...random.summary, passed: 4995, failed: 5 } }, base, true)).toBe(true);
   });
 });
