@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { generateSyntheticDag } from "./synth";
 import { layout } from "../../src/viz/layout";
 import { GraphView } from "../../src/viz/GraphView";
+import { practiceGraphProps } from "./browserWorkload";
 
 const params = new URLSearchParams(location.search);
 const n = Number(params.get("n"));
@@ -41,7 +42,7 @@ async function measureFrames(): Promise<{ frame: number[]; layout: number[] }> {
   const frames: number[] = [];
   const layouts: number[] = [];
   for (let i = 0; i < frameWarmups + animationRuns; i++) {
-    flushSync(() => root.render(createElement(GraphView, { state: before })));
+    flushSync(() => root.render(createElement(GraphView, practiceGraphProps(before, before))));
     await afterPaint();
     const layoutStart = performance.now();
     layout(after);
@@ -49,7 +50,7 @@ async function measureFrames(): Promise<{ frame: number[]; layout: number[] }> {
     let last = performance.now();
     const samples: number[] = [];
     const start = performance.now();
-    flushSync(() => root.render(createElement(GraphView, { state: after })));
+    flushSync(() => root.render(createElement(GraphView, practiceGraphProps(before, after))));
     while (performance.now() - start < animationMs) {
       await new Promise<void>((resolve) => requestAnimationFrame((time) => {
         samples.push(time - last);

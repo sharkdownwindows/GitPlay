@@ -10,6 +10,9 @@ coverage/
 harness/tmp/
 *.local
 
+# raw local design capture; curated handoff is under docs/design/
+/artifacts/
+
 # env
 .env
 .env.*

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { browserSeriesForReport, classifySaturation, percentile, toScalingSeries } from "./browserMetrics";
+import { browserSeriesForReport, classifyFrameBudget, classifySaturation, percentile, toScalingSeries } from "./browserMetrics";
 
 describe("browser measurement summaries", () => {
   it("uses nearest-rank percentiles without mutating samples", () => {
@@ -14,6 +14,28 @@ describe("browser measurement summaries", () => {
     expect(classifySaturation({ n: 10_000, status: "timeout", samplesMs: [] }, 100)).toBe(true);
     expect(classifySaturation({ n: 1_000, status: "ok", samplesMs: [80, 90, 140] }, 100)).toBe(true);
     expect(classifySaturation({ n: 100, status: "ok", samplesMs: [20, 30, 40] }, 100)).toBe(false);
+  });
+
+  it("classifies animation frame p95 at 0.1ms timer resolution without rounding samples", () => {
+    const boundarySamples = [16.6, 16.700000000000728];
+    const boundary = { n: 200, status: "ok" as const, samplesMs: boundarySamples };
+    expect(percentile(boundary.samplesMs, 0.95)).toBe(16.700000000000728);
+    expect(classifyFrameBudget(boundary)).toBe(false);
+    expect(boundary.samplesMs).toEqual([16.6, 16.700000000000728]);
+    expect(classifyFrameBudget({ n: 200, status: "ok", samplesMs: [16.8] })).toBe(true);
+    expect(classifyFrameBudget({ n: 200, status: "timeout", samplesMs: [] })).toBe(true);
+  });
+
+  it("keeps raw frame samples and p95 values in the measurement model", () => {
+    const samplesMs = [16.600000000000364, 16.700000000000728, 16.8];
+    const point = { n: 200, status: "ok" as const, samplesMs };
+    expect(toScalingSeries("animation frame", [point]).points[0]).toEqual({
+      n: 200, medianMs: 16.700000000000728, p95Ms: 16.8, iterations: 3,
+    });
+    expect(point.samplesMs).toEqual([16.600000000000364, 16.700000000000728, 16.8]);
+    const artifact = JSON.parse(JSON.stringify({ frame: [point], p95Ms: percentile(samplesMs, 0.95) }));
+    expect(artifact.frame[0].samplesMs).toEqual(samplesMs);
+    expect(artifact.p95Ms).toBe(16.8);
   });
 
   it("exports only completed browser measurements to ScalingSeries", () => {

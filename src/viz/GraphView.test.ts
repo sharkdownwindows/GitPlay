@@ -20,6 +20,14 @@ function render(state: RepoState): string {
   return renderToStaticMarkup(createElement(GraphView, { state }));
 }
 
+function renderPractice(state: RepoState, newId?: string): string {
+  return renderToStaticMarkup(createElement(GraphView, {
+    state,
+    presentation: "practice",
+    newId,
+  }));
+}
+
 describe("GraphView", () => {
   it("repo rỗng vẫn render SVG và HEAD unborn", () => {
     const html = render(emptyState());
@@ -77,6 +85,75 @@ describe("GraphView", () => {
     const html = render(state);
     expect(state).toEqual(before);
     expect(html).toContain('class="graph-node"');
+  });
+
+  it("Practice nhân đôi lane x, dùng node r=16 và edge đúng hướng", () => {
+    const state = sampleState();
+    const html = renderPractice(state);
+    const positions = new Map(layout(state).nodes.map((node) => [node.id, node]));
+    const child = positions.get("c2")!;
+    const parent = positions.get("c1")!;
+    const childX = 2 * (child.x - 40) + 40;
+    const parentX = 2 * (parent.x - 40) + 40;
+    expect(html).toContain(`transform:translate(${childX}px, ${child.y}px)`);
+    expect(html).toContain(`transform:translate(${parentX}px, ${parent.y}px)`);
+    expect(html).toContain('class="commit-node commit-node--head" cx="0" cy="0" r="16"');
+    expect(html).toContain(`d="M ${childX} ${child.y - 16} L ${parentX} ${parent.y + 16}"`);
+  });
+
+  it("Practice render HEAD ghép với branch, refs bên phải và node focusable", () => {
+    const html = renderPractice(sampleState());
+    expect(html).toContain('data-ref-kind="attached" transform="translate(30 ');
+    expect(html).toContain('class="ref-chip__head"');
+    expect(html).toContain('class="ref-chip__branch"');
+    expect(html).toContain('aria-label="commit c2, parents c1, branch main, HEAD attached to main"');
+    expect(html).toContain('tabindex="0"');
+  });
+
+  it("Practice chỉ gắn animation và halo vào commit mới", () => {
+    const html = renderPractice(sampleState(), "c2");
+    expect(html.match(/graph-node--new/g)).toHaveLength(1);
+    expect(html.match(/commit-node__halo/g)).toHaveLength(1);
+    expect(html).toContain("c2 — next · parents c1");
+  });
+
+  it("Practice cắt id dài trong node nhưng giữ id đầy đủ trong title", () => {
+    const state = sampleState();
+    const longBranch = "this-is-a-very-long-branch-name-that-keeps-going";
+    state.commits.longCommit = {
+      id: "longCommit",
+      parents: ["c2"],
+      message: "long id",
+      timestamp: "2020-01-03T00:00:00Z",
+    };
+    state.branches = { [longBranch]: "longCommit" };
+    state.head.ref = longBranch;
+    const html = renderPractice(state);
+    expect(html).toContain("lon…");
+    expect(html).toContain("longCommit — long id · parents c2");
+    expect(html).toContain(`branch ${longBranch}`);
+    expect(html).toContain(`HEAD attached to ${longBranch}`);
+  });
+
+  it("Practice renders target-only nodes and edges dashed with merge parent labels", () => {
+    const state = sampleState();
+    state.commits.c3 = {
+      id: "c3",
+      parents: ["c2", "c1"],
+      message: "merge",
+      timestamp: "2020-01-03T00:00:00Z",
+    };
+    state.branches.main = "c3";
+    const html = renderToStaticMarkup(createElement(GraphView, {
+      state,
+      presentation: "practice",
+      ghostIds: new Set(["c3"]),
+      parentLabels: true,
+    }));
+    expect(html.match(/graph-node--ghost/g)).toHaveLength(1);
+    expect(html.match(/graph-edge-wrap--ghost/g)).toHaveLength(2);
+    expect(html).toContain("1st parent");
+    expect(html).toContain("2nd parent");
   });
 
   it("viz không import terminal, levels hoặc verification", () => {
