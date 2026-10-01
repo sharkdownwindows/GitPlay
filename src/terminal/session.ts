@@ -3,7 +3,14 @@ import { parse } from "./parse";
 
 export interface TerminalEntry {
   command: string;
-  error: string[];
+  output: string[];
+  isError: boolean;
+}
+
+export interface CommandResult {
+  accepted: boolean;
+  ok: boolean;
+  output: readonly string[];
 }
 
 export interface TerminalSession {
@@ -12,14 +19,15 @@ export interface TerminalSession {
   cursor: number | null;
   draft: string;
   entries: TerminalEntry[];
+  lastSubmissionErrored: boolean;
 }
 
 export function initialTerminalSession(): TerminalSession {
-  return { input: "", history: [], cursor: null, draft: "", entries: [] };
+  return { input: "", history: [], cursor: null, draft: "", entries: [], lastSubmissionErrored: false };
 }
 
 export function editInput(session: TerminalSession, input: string): TerminalSession {
-  return { ...session, input };
+  return { ...session, input, lastSubmissionErrored: false };
 }
 
 export function previousCommand(session: TerminalSession): TerminalSession {
@@ -46,20 +54,28 @@ export function nextCommand(session: TerminalSession): TerminalSession {
 
 export function submitInput(
   session: TerminalSession,
-  onCommand: (command: Command) => boolean | void,
+  onCommand: (command: Command) => CommandResult | boolean | void,
 ): TerminalSession {
   const command = session.input.trim();
   if (command === "") return session;
 
   const parsed = parse(command);
-  const error = "ok" in parsed ? parsed.output : [];
-  if (!("ok" in parsed) && onCommand(parsed) === false) return session;
+  const parseFailed = "ok" in parsed;
+  const execution = parseFailed ? undefined : onCommand(parsed);
+  if (execution === false || (typeof execution === "object" && !execution.accepted)) return session;
+  const output = parseFailed
+    ? parsed.output
+    : typeof execution === "object"
+      ? [...execution.output]
+      : [];
+  const isError = parseFailed || (typeof execution === "object" && !execution.ok);
 
   return {
     input: "",
     history: [...session.history, command],
     cursor: null,
     draft: "",
-    entries: [...session.entries, { command, error }],
+    entries: [...session.entries, { command, output, isError }],
+    lastSubmissionErrored: isError,
   };
 }

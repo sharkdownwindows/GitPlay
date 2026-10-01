@@ -1,34 +1,76 @@
 import type { CoverageByCommand, DiffTestSummary as Summary } from "./report";
+import { formatDuration, formatInt } from "./format";
 
 interface Props {
   summary: Summary;
   coverage: CoverageByCommand;
 }
 
+interface StatsProps {
+  summary: Summary;
+}
+
+interface CoverageProps {
+  summary: Summary;
+  coverage: CoverageByCommand;
+}
+
 const commands = ["commit", "branch", "switch", "checkout", "merge"] as const;
+
+export function DiffTestStats({ summary }: StatsProps) {
+  return (
+    <dl className="verification-stats" aria-label="Differential test summary">
+        <div className={`verification-stat verification-stat--${summary.failed === 0 ? "success" : "danger"}`}>
+          <dt>Cases passed</dt>
+          <dd>{formatInt(summary.passed)} <span>/ {formatInt(summary.totalCases)}</span></dd>
+          {summary.failed === 0 && <p>Repository state identical to git</p>}
+        </div>
+        <div className={`verification-stat verification-stat--${summary.failed === 0 ? "success" : "danger"}`}>
+          <dt>Hard divergences</dt>
+          <dd>{formatInt(summary.failed)}</dd>
+          {summary.failed === 0 && <p>No commit, branch or HEAD mismatch</p>}
+        </div>
+        <div className="verification-stat verification-stat--warning">
+          <dt>Soft output warnings</dt>
+          <dd>{formatInt(summary.warnings)}</dd>
+          <p>Message text differs; counted per step</p>
+        </div>
+        <div className="verification-stat verification-stat--neutral">
+          <dt>Run</dt>
+          <dd>{formatDuration(summary.durationMs)}</dd>
+          <p>Depth {summary.exhaustiveDepth} exhaustive + {formatInt(summary.randomCases)} random · seed {summary.seed}</p>
+        </div>
+    </dl>
+  );
+}
+
+export function CommandCoverage({ summary, coverage }: CoverageProps) {
+  return (
+    <section className="verification-section" aria-labelledby="coverage-heading">
+        <div className="verification-section__title-row">
+          <h2 id="coverage-heading">Command coverage</h2>
+          <p>Cases that use each command, of {formatInt(summary.totalCases)}</p>
+        </div>
+        <ul className="coverage-list">
+        {commands.map((command) => (
+          <li key={command}>
+            <span>{command}</span>
+            <span className="coverage-track" aria-hidden="true">
+              <span style={{ width: `${summary.totalCases > 0 ? Math.min(100, coverage[command] / summary.totalCases * 100) : 0}%` }} />
+            </span>
+            <strong>{formatInt(coverage[command])}</strong>
+          </li>
+        ))}
+        </ul>
+    </section>
+  );
+}
 
 export function DiffTestSummary({ summary, coverage }: Props) {
   return (
-    <section className="rounded border border-neutral-700 p-4" aria-label="Differential tests">
-      <h2 className="font-semibold">Differential tests</h2>
-      <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-        <div><dt className="text-neutral-400">Total</dt><dd>{summary.totalCases}</dd></div>
-        <div><dt className="text-neutral-400">Passed</dt><dd>{summary.passed}</dd></div>
-        <div><dt className="text-neutral-400">Failed (hard divergences)</dt><dd>{summary.failed}</dd></div>
-        <div><dt className="text-neutral-400">Warnings (soft output)</dt><dd>{summary.warnings}</dd></div>
-      </dl>
-      <p className="mt-3 text-sm text-neutral-400">
-        Exhaustive depth: {summary.exhaustiveDepth} · Random cases: {summary.randomCases} ·
-        Seed: {summary.seed} · Duration: {summary.durationMs} ms
-      </p>
-      <h3 className="mt-4 text-sm font-medium">Command coverage</h3>
-      <ul className="mt-2 grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
-        {commands.map((command) => (
-          <li key={command} className="rounded bg-neutral-900 px-3 py-2">
-            <span className="text-neutral-400">{command}</span>: {coverage[command]}
-          </li>
-        ))}
-      </ul>
-    </section>
+    <>
+      <DiffTestStats summary={summary} />
+      <CommandCoverage summary={summary} coverage={coverage} />
+    </>
   );
 }

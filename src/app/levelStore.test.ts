@@ -20,14 +20,15 @@ describe("Levels application store", () => {
     expect(html.match(/<li>/g)).toHaveLength(8);
     expect(html.indexOf("First commit")).toBeLessThan(html.indexOf("Fast-forward merge"));
     expect(html.indexOf("Fast-forward merge")).toBeLessThan(html.indexOf("When fast-forward is impossible"));
-    expect(html.match(/Completed/g)).toHaveLength(1);
+    expect(html).toContain("Level 06, Fast-forward merge, completed");
+    expect(html.match(/is-complete/g)).toHaveLength(1);
   });
 
   it("renders the first level in the Levels tab without a backend", () => {
     const html = renderToStaticMarkup(createElement(Levels));
     expect(html).toContain("Create the first commit on main.");
     expect(html).toContain('aria-label="Git terminal"');
-    expect(html).toContain('aria-label="Git commit graph"');
+    expect(html).toContain('aria-label="Commit graph"');
   });
 
   it("restores the completion marker from localStorage after reload", async () => {
@@ -45,7 +46,8 @@ describe("Levels application store", () => {
     await reloaded.load();
     const html = renderToStaticMarkup(createElement(LevelList, { levels, progress: reloaded.getAll(),
       selectedId: record.levelId, onSelect: () => {} }));
-    expect(html.match(/Completed/g)).toHaveLength(1);
+    expect(html).toContain("Level 01, First commit, completed");
+    expect(html.match(/is-complete/g)).toHaveLength(1);
   });
 
   it("records completion with levelId, ISO timestamp and command count", () => {
@@ -69,6 +71,21 @@ describe("Levels application store", () => {
     state = levelReducer(state, { type: "run", command: parsed, completedAt: "2026-09-29T13:00:00.000Z" });
     expect(state.progress[level.id]?.completedAt).toBe("2026-09-29T12:00:00.000Z");
     expect(state.progress[level.id]?.commandCount).toBe(1);
+  });
+
+  it("shows a disallowed command error without changing repo or command count", () => {
+    const initial = initialLevelAppState();
+    const parsed = parse("git branch x");
+    if (!("kind" in parsed)) throw new Error("Cannot parse branch");
+    const state = levelReducer(initial, {
+      type: "run",
+      command: parsed,
+      completedAt: "2026-10-01T00:00:00.000Z",
+    });
+    expect(state.repo).toBe(initial.repo);
+    expect(state.commandCount).toBe(0);
+    expect(state.latestCompletion).toBeNull();
+    expect(state.output.at(-1)).toBe("branch is not available in this level.");
   });
 
   it("never completes sandbox without a target", () => {

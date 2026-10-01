@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
@@ -29,13 +28,6 @@ describe("progress store", () => {
     expect(reloaded.getAll()).toEqual({ "01": record });
     expect(reloaded.isComplete("01")).toBe(true);
     expect(fetchSpy).not.toHaveBeenCalled();
-  });
-
-  it("progress không import sync", () => {
-    for (const file of ["store.ts", "merge.ts"]) {
-      const source = readFileSync(new URL(file, import.meta.url), "utf8");
-      expect(source).not.toMatch(/\bfrom\s*["'][^"']*\/sync(?:\/|["'])/);
-    }
   });
 
   it.each(["not JSON", "[]", "null", '{"01":{"levelId":"02","completedAt":"bad","commandCount":-1}}'])

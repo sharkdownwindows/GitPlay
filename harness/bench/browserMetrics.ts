@@ -13,6 +13,7 @@ export interface BrowserMeasurement {
   os: string;
   nodeVersion: string;
   gitVersion: string;
+  buildMode: "development" | "production";
   seed: number;
   warmups: { render: number; frame: number };
   renderIterations: number;
@@ -26,6 +27,7 @@ export interface BrowserMeasurement {
 }
 
 export const RENDER_SATURATION_BUDGET_MS = 100;
+export const FRAME_BUDGET_MS = 16.7;
 
 export function percentile(samples: readonly number[], quantile: number): number {
   if (!samples.length || samples.some((n) => !Number.isFinite(n) || n < 0) || quantile < 0 || quantile > 1) {
@@ -38,6 +40,12 @@ export function percentile(samples: readonly number[], quantile: number): number
 export function classifySaturation(point: BrowserPoint, budgetMs: number): boolean {
   return point.status === "timeout" ||
     (point.samplesMs.length > 0 && percentile(point.samplesMs, 0.95) > budgetMs);
+}
+
+/** Frame timestamps are quantized to 0.1 ms, so compare at the timer's resolution. */
+export function classifyFrameBudget(point: BrowserPoint, budgetMs = FRAME_BUDGET_MS): boolean {
+  return point.status === "timeout" ||
+    (point.samplesMs.length > 0 && Math.round(percentile(point.samplesMs, 0.95) * 10) / 10 > budgetMs);
 }
 
 export function toScalingSeries(label: string, points: readonly BrowserPoint[]): ScalingSeries {
@@ -56,6 +64,7 @@ export function browserSeriesForReport(value: unknown, commitSha: string): Scali
       typeof measurement.os !== "string" || measurement.os.length === 0 ||
       typeof measurement.nodeVersion !== "string" || !/^v\d+\.\d+/.test(measurement.nodeVersion) ||
       typeof measurement.gitVersion !== "string" || !/^git version \d+\.\d+/.test(measurement.gitVersion) ||
+      !["development", "production"].includes(measurement.buildMode) ||
       !Number.isSafeInteger(measurement.seed) ||
       !Number.isSafeInteger(measurement.renderIterations) || measurement.renderIterations < 1 ||
       !Number.isSafeInteger(measurement.animationRuns) || measurement.animationRuns < 1 ||

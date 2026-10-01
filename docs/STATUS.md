@@ -9,6 +9,12 @@ Cập nhật: 2026-09-30, source SHA `4448efb8aaecea310266c3ab002b6928362db466`.
 | M3 — năm lệnh và harness v1 | **Complete** | Năm lệnh có trong engine; CI differential gate chạy Git 2.43. |
 | M4 — cổng quyết định | **Complete** | [Nightly Verification run 36685786989](https://github.com/sharkdownwindows/GitPlay/actions/runs/36685786989) hoàn tất xanh trên source SHA ở trên, gồm đo browser, full differential/invalid gate, layout benchmark và publish report. |
 
+## Quyết định M5 — scope chính thức
+
+M5 chính thức cắt Tier 2. GitScope là sản phẩm Tier 1-only; không triển khai `add`, authentication, server hoặc đồng bộ. Tiến độ level chỉ lưu trong localStorage. Tier 2 từng được cân nhắc sau khi cổng M4 đạt, nhưng quyết định cuối cùng tại M5 là không thực hiện.
+
+Tám level hiện tại (01–08) đáp ứng điều kiện thoát của #59; không làm level 09–12. Vì không có level 09, #60 bị cắt. #52–#58 được đánh dấu Cancelled / Out of scope. Phần việc còn lại trong M5 là #61–#64: user evaluation, sửa lỗi, trạng thái rỗng/lỗi và kiểm tra offline. Sau đó tập trung UI polish, stability và demo theo M6.
+
 ## Bằng chứng M4 và issues #43–#51
 
 Nightly report do CI tạo lúc `2026-09-30T08:07:30Z`, commit `4448efb8aaecea310266c3ab002b6928362db466`, Git 2.43.0:
@@ -23,7 +29,7 @@ Nightly report do CI tạo lúc `2026-09-30T08:07:30Z`, commit `4448efb8aaecea31
 - **#50 — Complete:** render SVG được đo riêng với `layout()`; p95 vượt ngân sách 100 ms đầu tiên tại n=1.000.
 - **#51 — Complete:** hoàn tất level được lưu local và marker vẫn tồn tại sau khi nạp lại store; test ở `src/app/levelStore.test.ts`.
 
-GitHub issue [#47 — Recheck animation frame p95 in production build](https://github.com/sharkdownwindows/GitPlay/issues/47) vẫn **Open**: nội dung yêu cầu lặp phép đo bằng production build; workflow hiện tại dùng Vite development server. Benchmark hiện tại xác nhận M4/#49, chưa đáp ứng yêu cầu production riêng của issue GitHub này.
+GitHub issue [#47 — Recheck animation frame p95 in production build](https://github.com/sharkdownwindows/GitPlay/issues/47) vẫn **Open**. Production bundle đã được đo ở SHA `2dab68b90e10b6c0a9ffe3afdae71e8eecfe7039`; p95 thô là `16.700000000000273 ms`, cao hơn ngưỡng 16.7 ms theo phép so sánh hiện tại. Bước tiếp theo là profiling Chrome trên production build; chưa tối ưu `GraphView`.
 
 ## Validation local trước snapshot M4 (2026-09-28)
 
@@ -34,8 +40,6 @@ GitHub issue [#47 — Recheck animation frame p95 in production build](https://g
 | `npm run build` | 0 | Vite production build pass. |
 | `npm run lint:imports` | 0 | Luật import cho `src/core` và `src/progress` pass với `node scripts/check-imports.ts`. |
 | `git diff --check` | 0 | Không có lỗi whitespace trong unstaged diff. |
-
-Không chạy `npm run check:tier1` trong working repository vì script xóa thư mục Tier 2.
 
 ## Spike #23 — thời gian gọi Git (2026-09-28)
 
@@ -49,6 +53,6 @@ Môi trường: Node `v24.16.0`; Git `2.31.1.windows.1`; Windows `win32 10.0.262
 
 ## Việc tiếp theo
 
-- Có thể bắt đầu cân nhắc Tier 2 theo cổng M4; Tier 1 vẫn phải chạy độc lập.
-- Lặp benchmark frame trên production build để xử lý GitHub issue #47. Mốc p95 hiện tại chỉ là headless Chrome trên runner CI.
+- Hoàn thành M5 #61–#64, sau đó tập trung polish giao diện, stability và demo M6.
+- Profiling Chrome trên production build để xử lý GitHub issue #47. Đo hiện tại là headless trên máy Linux; chưa có trace để quy trách nhiệm cho scripting, layout, paint hay compositing.
 - `BRIEF.md` vẫn là placeholder; PRD hiện dựa trên issue list, technical overview và các contract đã chấp nhận.

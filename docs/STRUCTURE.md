@@ -196,7 +196,7 @@ Nội dung đầy đủ ở `src/verification/report.ts`; `TECHNICAL_OVERVIEW.md
 
 ### `src/progress/types.ts` — đóng băng ngày 1
 
-`LevelRecord` gồm `levelId`, `completedAt` (ISO 8601) và `commandCount`. `ProgressSet = Record<string, LevelRecord>`, khóa trùng `levelId`. Đây là kiểu chung cho localStorage và payload API/SQLite nếu triển khai Tier 2.
+`LevelRecord` gồm `levelId`, `completedAt` (ISO 8601) và `commandCount`. `ProgressSet = Record<string, LevelRecord>`, khóa trùng `levelId`. Tiến độ chỉ được lưu trong localStorage.
 
 ---
 

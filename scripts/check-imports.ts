@@ -31,7 +31,7 @@ const RULES: Rule[] = [
       /^react\//,
       /\.tsx$/,
       /\.css$/,
-      /\/(viz|terminal|levels|verification|commands-ref|sync|app|progress)(\/|$)/,
+      /\/(viz|terminal|levels|verification|commands-ref|app|progress)(\/|$)/,
     ],
     forbiddenGlobals: [
       /\bdocument\./,
@@ -48,11 +48,10 @@ const RULES: Rule[] = [
       /^react-dom/,
       /\.tsx$/,
       /\.css$/,
-      /\/(sync|viz|terminal|levels|verification|commands-ref|app)(\/|$)/,
-      /^\.\.\/sync/,
+      /\/(viz|terminal|levels|verification|commands-ref|app)(\/|$)/,
     ],
     forbiddenGlobals: [/\bfetch\s*\(/],
-    why: "progress/ không được biết sync/ tồn tại. Chiều phụ thuộc một chiều: progress phát sự kiện, sync lắng nghe. Đảo chiều làm hỏng offline-first và chỉ lộ ra lúc demo mất mạng.",
+    why: "progress/ lưu tiến độ trong localStorage và không được phụ thuộc vào UI hoặc service bên ngoài.",
   },
 ];
 

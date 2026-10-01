@@ -1,7 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CONTRACT 3 — ĐÓNG BĂNG NGÀY 1
-// Cùng MỘT kiểu cho ba nơi: localStorage, payload API, hàng SQLite.
-// Nhờ vậy merge() test được bằng unit test thuần — không mạng, không database.
+// Kiểu tiến độ level được lưu duy nhất trong localStorage.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface LevelRecord {

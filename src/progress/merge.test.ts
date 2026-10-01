@@ -7,13 +7,13 @@ function record(levelId: string, completedAt: string, commandCount: number): Lev
 }
 
 describe("merge progress", () => {
-  it("union giữ level chỉ có ở mỗi phía và không mutate input", () => {
+  it("giữ level chỉ có ở mỗi tập và không mutate input", () => {
     const local = { "01": record("01", "2026-09-01T00:00:00Z", 4) };
-    const remote = { "02": record("02", "2026-09-02T00:00:00Z", 5) };
-    const result = merge(local, remote);
-    expect(result).toEqual({ ...local, ...remote });
+    const incoming = { "02": record("02", "2026-09-02T00:00:00Z", 5) };
+    const result = merge(local, incoming);
+    expect(result).toEqual({ ...local, ...incoming });
     expect(local).toEqual({ "01": record("01", "2026-09-01T00:00:00Z", 4) });
-    expect(remote).toEqual({ "02": record("02", "2026-09-02T00:00:00Z", 5) });
+    expect(incoming).toEqual({ "02": record("02", "2026-09-02T00:00:00Z", 5) });
   });
 
   it("giữ completion sớm hơn dù commandCount lớn hơn", () => {

@@ -10,10 +10,8 @@ coverage/
 harness/tmp/
 *.local
 
-# local data (Tier 2)
-*.sqlite
-*.sqlite3
-*.db
+# raw local design capture; curated handoff is under docs/design/
+/artifacts/
 
 # env
 .env

@@ -4,17 +4,20 @@ import { tmpdir } from "node:os";
 import os from "node:os";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { createServer } from "vite";
 import type { BrowserMeasurement, BrowserPoint } from "./browserMetrics";
-import { classifySaturation, percentile, RENDER_SATURATION_BUDGET_MS } from "./browserMetrics";
+import { classifyFrameBudget, classifySaturation, FRAME_BUDGET_MS, percentile, RENDER_SATURATION_BUDGET_MS } from "./browserMetrics";
+import { selectBrowserBuildMode, startBrowserBenchmarkServer, type BrowserBenchmarkServer } from "./browserServer";
 import { ChromeProcessError, ChromeProcessMonitor, cleanupBrowserResources,
   waitForChromeDebuggingPort } from "./chromeLifecycle";
 
 const smoke = process.argv.includes("--smoke");
+const traceFrames = process.argv.includes("--trace");
+const buildMode = selectBrowserBuildMode(process.argv.slice(2));
 const chrome = process.env.GITSCOPE_BROWSER ?? (process.platform === "win32"
   ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" : "google-chrome");
 const profile = mkdtempSync(path.join(tmpdir(), "gitscope-browser-"));
-let server: Awaited<ReturnType<typeof createServer>> | undefined;
+let server: BrowserBenchmarkServer["server"] | undefined;
+let buildDirectory: string | undefined;
 let processHandle: ReturnType<typeof spawn> | undefined;
 let processMonitor: ChromeProcessMonitor | undefined;
 
@@ -26,11 +29,14 @@ async function connect(url: string) {
   });
   let nextId = 0;
   const pending = new Map<number, (value: any) => void>();
+  const eventHandlers = new Map<string, Array<(message: any) => void>>();
   ws.addEventListener("message", (event) => {
     const message = JSON.parse(String(event.data));
     if (message.id && pending.has(message.id)) {
       pending.get(message.id)!(message);
       pending.delete(message.id);
+    } else if (message.method) {
+      for (const handler of eventHandlers.get(message.method) ?? []) handler(message);
     }
   });
   return {
@@ -41,17 +47,37 @@ async function connect(url: string) {
         ws.send(JSON.stringify({ id, method, params }));
       });
     },
+    onEvent(method: string, handler: (message: any) => void): () => void {
+      const handlers = eventHandlers.get(method) ?? [];
+      handlers.push(handler);
+      eventHandlers.set(method, handlers);
+      return () => eventHandlers.set(method, handlers.filter((item) => item !== handler));
+    },
     close: () => ws.close(),
   };
 }
 
 async function measure(port: number, url: string, kind: "render" | "frame", n: number,
-  timeoutMs: number): Promise<{ point: BrowserPoint; layout: BrowserPoint }> {
+  timeoutMs: number, trace = false): Promise<{ point: BrowserPoint; layout: BrowserPoint; traceEvents?: unknown[] }> {
   const target = await fetch(`http://127.0.0.1:${port}/json/new?${encodeURIComponent(url)}`, { method: "PUT" });
   if (!target.ok) throw new Error(`Cannot create Chrome tab: ${target.status}`);
   const tab = await target.json() as { webSocketDebuggerUrl: string; id: string };
   const cdp = await connect(tab.webSocketDebuggerUrl);
   try {
+    const traceEvents: unknown[] = [];
+    let finishTrace: Promise<any> | undefined;
+    if (trace) {
+      cdp.onEvent("Tracing.dataCollected", (event) => traceEvents.push(...(event.params?.value ?? [])));
+      finishTrace = new Promise((resolve) => cdp.onEvent("Tracing.tracingComplete", resolve));
+      await cdp.call("Tracing.start", { transferMode: "ReportEvents",
+        categories: "devtools.timeline,v8.execute,blink,cc,disabled-by-default-devtools.timeline" });
+    }
+    const finish = async () => {
+      if (!trace) return undefined;
+      await cdp.call("Tracing.end");
+      await finishTrace;
+      return traceEvents;
+    };
     const started = Date.now();
     while (Date.now() - started < timeoutMs) {
       const response = await cdp.call("Runtime.evaluate", {
@@ -62,15 +88,18 @@ async function measure(port: number, url: string, kind: "render" | "frame", n: n
         const result = JSON.parse(value) as { ok: boolean; error?: string;
           render?: number[]; frame?: number[]; layout: number[] };
         if (!result.ok) throw new Error(result.error);
+        const events = await finish();
         return {
           point: { n, status: "ok", samplesMs: result[kind] ?? [] },
           layout: { n, status: "ok", samplesMs: result.layout },
+          ...(events ? { traceEvents: events } : {}),
         };
       }
       await delay(100);
     }
+    const events = await finish();
     return { point: { n, status: "timeout", samplesMs: [] },
-      layout: { n, status: "timeout", samplesMs: [] } };
+      layout: { n, status: "timeout", samplesMs: [] }, ...(events ? { traceEvents: events } : {}) };
   } finally {
     cdp.close();
     await fetch(`http://127.0.0.1:${port}/json/close/${tab.id}`).catch(() => {});
@@ -78,9 +107,9 @@ async function measure(port: number, url: string, kind: "render" | "frame", n: n
 }
 
 try {
-  server = await createServer({ server: { host: "127.0.0.1", port: 0 } });
-  await server.listen();
-  const base = server.resolvedUrls!.local[0]!;
+  const browserServer = await startBrowserBenchmarkServer(buildMode);
+  server = browserServer.server;
+  buildDirectory = browserServer.buildDirectory;
   const chromeArguments = ["--headless=new", "--no-first-run", "--no-default-browser-check",
     "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--window-size=1280,800",
     "--force-device-scale-factor=1", "--remote-allow-origins=*"];
@@ -107,14 +136,14 @@ try {
     os: `${os.platform()} ${os.release()} ${os.arch()}`,
     nodeVersion: process.version,
     gitVersion: execFileSync("git", ["--version"], { encoding: "utf8" }).trim(),
-    seed: 42, warmups: { render: renderWarmups, frame: frameWarmups }, renderIterations,
+    buildMode, seed: 42, warmups: { render: renderWarmups, frame: frameWarmups }, renderIterations,
     animationRuns, viewport: "1280x800@1x", mode: "headless", saturationPoint: null,
     render: [], frame: [], layout: [],
   };
   for (const n of renderSizes) {
     const params = new URLSearchParams({ mode: "render", n: String(n),
       renderWarmups: String(renderWarmups), renderIterations: String(renderIterations) });
-    const url = `${base}harness/bench/browser.html?${params}`;
+    const url = `${browserServer.pageUrl}?${params}`;
     const measured = await measure(port, url, "render", n, 30_000);
     result.render.push(measured.point);
     result.layout.push(measured.layout);
@@ -123,15 +152,25 @@ try {
   }
   const frameParams = new URLSearchParams({ mode: "frame", n: String(frameSize),
     frameWarmups: String(frameWarmups), animationRuns: String(animationRuns), animationMs: String(animationMs) });
-  const frame = await measure(port, `${base}harness/bench/browser.html?${frameParams}`, "frame", frameSize, 30_000);
+  const frame = await measure(port, `${browserServer.pageUrl}?${frameParams}`, "frame", frameSize, 30_000, traceFrames);
+  if (frame.traceEvents) {
+    writeFileSync(path.join(tmpdir(), "gitscope-browser-trace.json"), JSON.stringify({ traceEvents: frame.traceEvents }));
+    console.log(`Chrome Performance trace: ${path.join(tmpdir(), "gitscope-browser-trace.json")} (${frame.traceEvents.length} events)`);
+  }
   result.frame.push(frame.point);
   result.layout.push(frame.layout);
   const saturation = result.render.filter((point) =>
     classifySaturation(point, RENDER_SATURATION_BUDGET_MS)).sort((a, b) => a.n - b.n)[0];
   result.saturationPoint = saturation ? { metric: "SVG render", n: saturation.n } : null;
-  console.log(`Animation frames n=${frameSize}: ${frame.point.status}${frame.point.samplesMs.length
-    ? ` p95=${percentile(frame.point.samplesMs, 0.95).toFixed(2)} ms, ${frame.point.samplesMs.length} frames` : ""}`);
-  console.log(`Frame budget exceeded: ${classifySaturation(frame.point, 16.7)}`);
+  const frameSamples = frame.point.samplesMs;
+  const frameP95 = frameSamples.length ? percentile(frameSamples, 0.95) : null;
+  console.log(`Animation frames n=${frameSize}: ${frame.point.status}${frameP95 !== null
+    ? ` median=${percentile(frameSamples, 0.5)} ms, p95=${frameP95} ms, max=${Math.max(...frameSamples)} ms, ${frameSamples.length} frames` : ""}`);
+  if (frameSamples.length) {
+    console.log(`Raw frames >16.7ms: ${frameSamples.filter((sample) => sample > 16.7).length}; >17ms: ${frameSamples.filter((sample) => sample > 17).length}; >20ms: ${frameSamples.filter((sample) => sample > 20).length}`);
+  }
+  console.log(`Build mode: ${buildMode}`);
+  console.log(`Frame budget exceeded (p95 rounded to 0.1ms, budget ${FRAME_BUDGET_MS}ms): ${classifyFrameBudget(frame.point)}`);
   console.log(`SVG saturation point (p95 > ${RENDER_SATURATION_BUDGET_MS} ms or timeout): ${result.saturationPoint?.n ?? "none"}`);
   if (smoke) {
     if (result.render.some((point) => point.status !== "ok" || point.samplesMs.length !== renderIterations) ||
@@ -154,6 +193,7 @@ try {
     processHandle,
     closeServer: runningServer ? () => runningServer.close() : undefined,
     profile,
+    buildDirectory,
   });
   processMonitor?.dispose();
 }

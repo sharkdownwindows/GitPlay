@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   check:
-    name: typecheck · test · lint
+    name: typecheck · test · build · lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,8 +21,7 @@ jobs:
           node-version: 24
           cache: npm
 
-      # allowScripts nằm trong package.json nên native module (better-sqlite3,
-      # argon2) và esbuild build được mà không cần thao tác tay.
+      # allowScripts trong package.json cho phép esbuild chạy postinstall.
       - run: npm ci
 
       - name: Typecheck
@@ -34,18 +33,8 @@ jobs:
       - name: Ràng buộc phụ thuộc (core/ và progress/ sạch)
         run: npm run lint:imports
 
-  tier1-build:
-    name: tier1-build (xóa Tier 2 rồi build)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      # Fail = Tier 2 đã rò rỉ vào Tier 1. Xem STRUCTURE.md §4.
-      - run: npm run check:tier1
+      - name: Production build
+        run: npm run build
 
   differential:
     name: differential depth 2 (Git 2.43)
