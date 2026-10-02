@@ -37,6 +37,16 @@ describe("parse", () => {
     });
   });
 
+  it.each(["git --help", "git help"])(
+    "keeps terminal built-in %s outside the five-command parser contract",
+    (input) => {
+      expect(parse(input)).toMatchObject({
+        ok: false,
+        errorClass: "UnknownSubcommand",
+      });
+    },
+  );
+
   it.each<[string, ErrorClass]>([
     ["", "NotGitCommand"],
     ["ls -la", "NotGitCommand"],

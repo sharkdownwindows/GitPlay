@@ -1,4 +1,5 @@
 import type { Command } from "../core/types";
+import { helpForInput } from "./help";
 import { parse } from "./parse";
 
 export interface TerminalEntry {
@@ -52,12 +53,33 @@ export function nextCommand(session: TerminalSession): TerminalSession {
   return { ...session, input: session.history[cursor]!, cursor };
 }
 
+function completeSubmission(
+  session: TerminalSession,
+  command: string,
+  output: readonly string[],
+  isError: boolean,
+): TerminalSession {
+  return {
+    input: "",
+    history: [...session.history, command],
+    cursor: null,
+    draft: "",
+    entries: [...session.entries, { command, output: [...output], isError }],
+    lastSubmissionErrored: isError,
+  };
+}
+
 export function submitInput(
   session: TerminalSession,
   onCommand: (command: Command) => CommandResult | boolean | void,
 ): TerminalSession {
   const command = session.input.trim();
   if (command === "") return session;
+
+  const helpOutput = helpForInput(command);
+  if (helpOutput !== null) {
+    return completeSubmission(session, command, helpOutput, false);
+  }
 
   const parsed = parse(command);
   const parseFailed = "ok" in parsed;
@@ -70,12 +92,5 @@ export function submitInput(
       : [];
   const isError = parseFailed || (typeof execution === "object" && !execution.ok);
 
-  return {
-    input: "",
-    history: [...session.history, command],
-    cursor: null,
-    draft: "",
-    entries: [...session.entries, { command, output, isError }],
-    lastSubmissionErrored: isError,
-  };
+  return completeSubmission(session, command, output, isError);
 }

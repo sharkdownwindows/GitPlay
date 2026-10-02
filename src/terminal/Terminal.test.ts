@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { HELP_LINES, helpForInput } from "./help";
 import { isNearLogBottom, Terminal } from "./Terminal";
 import { editInput, initialTerminalSession, nextCommand, previousCommand, submitInput } from "./session";
 
@@ -38,6 +39,77 @@ describe("Terminal", () => {
       { command: "git merge", output: ["fatal: you must specify a target"], isError: true },
     ]);
     expect(next.history).toEqual(["git merge"]);
+  });
+
+  it.each(["git --help", "git help"])(
+    "%s hiển thị help thành công mà không chạy command",
+    (command) => {
+      const onCommand = vi.fn();
+      const next = submitInput(
+        editInput(initialTerminalSession(), `  ${command}  `),
+        onCommand,
+      );
+
+      expect(onCommand).not.toHaveBeenCalled();
+      expect(next.history).toEqual([command]);
+      expect(next.input).toBe("");
+      expect(next.entries).toEqual([{
+        command,
+        output: [...HELP_LINES],
+        isError: false,
+      }]);
+      expect(next.lastSubmissionErrored).toBe(false);
+    },
+  );
+
+  it("help built-in chuẩn hóa khoảng trắng nhưng không nhận command-specific help", () => {
+    expect(helpForInput(" \tgit   --help\n")).toBe(HELP_LINES);
+    expect(helpForInput("git   help")).toBe(HELP_LINES);
+    expect(helpForInput("git commit --help")).toBeNull();
+  });
+
+  it("help mô tả chính xác năm command repository được hỗ trợ", () => {
+    expect(HELP_LINES).toEqual([
+      "GitPlay supports a focused subset of Git:",
+      '  git commit [-m "<message>"]',
+      "  git branch [<name>]",
+      "  git switch <branch>",
+      "  git switch -c <branch>",
+      "  git switch --detach <commit>",
+      "  git checkout <branch-or-commit>",
+      "  git checkout -b <branch>",
+      "  git merge <branch>",
+      "Open the Reference tab for examples and visual explanations.",
+    ]);
+  });
+
+  it("help không làm tăng level command count", () => {
+    let commandCount = 0;
+    const onCommand = vi.fn(() => {
+      commandCount += 1;
+      return { accepted: true, ok: true, output: [] };
+    });
+
+    submitInput(editInput(initialTerminalSession(), "git --help"), onCommand);
+
+    expect(onCommand).not.toHaveBeenCalled();
+    expect(commandCount).toBe(0);
+  });
+
+  it("unknown subcommand vẫn là lỗi và gợi ý git --help", () => {
+    const onCommand = vi.fn();
+    const next = submitInput(
+      editInput(initialTerminalSession(), "git rebase main"),
+      onCommand,
+    );
+
+    expect(onCommand).not.toHaveBeenCalled();
+    expect(next.entries).toEqual([{
+      command: "git rebase main",
+      output: ["git: 'rebase' is not a git command. See 'git --help'."],
+      isError: true,
+    }]);
+    expect(next.lastSubmissionErrored).toBe(true);
   });
 
   it("ArrowUp/ArrowDown duyệt history và khôi phục draft", () => {
