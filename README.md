@@ -1,99 +1,129 @@
-# GitScope
+# GitPlay
 
-GitScope là công cụ học Git bằng trực quan hóa: người học nhập lệnh, theo dõi commit DAG thay đổi, và giải level có kiểm tra mục tiêu tự động. Engine được đối chiếu với `git` thật bằng differential testing; report kiểm chứng và benchmark xuất hiện trong tab Verification.
+GitPlay is a static educational web app for learning how Git changes a commit graph. A learner enters a command, watches the DAG, branches and `HEAD` change, and works through eight levels with automatic goal checking.
 
-**Phạm vi sản phẩm:** Tier 1-only. Ứng dụng gồm engine năm lệnh (`commit`, `branch`, `switch`, `checkout`, `merge`), terminal, graph, 8 level, Command Reference, undo/redo, Verification và tiến độ localStorage. Không triển khai `add`, authentication, server hoặc sync. Trọng tâm hiện tại là UI polish, user evaluation, stability và demo. Xem [trạng thái mốc](docs/STATUS.md).
+The product is deliberately limited to five commands: `commit`, `branch`, `switch`, `checkout` and `merge`. It has no backend, account system or progress synchronization. Progress stays in the browser's `localStorage`.
 
-## Chạy local
+The measured results, limitations and provenance are in the [final report](docs/FINAL_REPORT.md).
 
-Yêu cầu Node 20+ (CI chạy Node 24).
+## Requirements
+
+- Node.js 24.x, matching CI
+- npm, supplied with Node.js
+- Git only if you want to run the differential harness against real Git; CI pins Git 2.43
+
+## Install and run in development
+
+From the repository root:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Mở địa chỉ local Vite được in trong terminal. Ứng dụng không cần backend; tiến độ level được lưu trong localStorage của trình duyệt.
+Open the local URL printed by Vite, normally `http://localhost:5173`.
 
-## Kiểm tra và benchmark
+## Test and build
 
 ```bash
-npm test
 npm run typecheck
-npm run build
+npm test
 npm run lint:imports
+npm run build
 ```
 
-| Lệnh | Mục đích |
-|---|---|
-| `npm run dev` | Chạy ứng dụng bằng Vite dev server |
-| `npm run build` | Typecheck và tạo production build tĩnh |
-| `npm run typecheck` | Chỉ chạy TypeScript typecheck |
-| `npm test` | Chạy unit test bằng Vitest |
-| `npm run lint:imports` | Kiểm tra luật phụ thuộc của core và progress |
-| `npm run diff:quick` | Differential test: vét cạn depth 3 và 5.000 case random |
-| `npm run diff:deep` | Differential test vét cạn depth 4, chạy nightly |
-| `npm run bench` | Benchmark `src/viz/layout.ts` trên DAG n = 10²…10⁵ |
-| `npm run report` | Gộp kết quả diff và benchmark vào `public/verification.json` |
+The production bundle is written to `dist/`. The build is entirely static.
 
-Unit test đặt cạnh source tương ứng, ví dụ `commit.ts` và `commit.test.ts`.
+Additional verification commands:
 
-## Kiến trúc
-
-```mermaid
-flowchart TB
-    subgraph Browser["Ứng dụng tĩnh trong browser"]
-        shell["app/store · bootstrap"]
-        core["core · Git engine"]
-        terminal["terminal · parser + UI"]
-        graph["viz · deterministic layout + SVG"]
-        levels["levels · 8 level + goal checker"]
-        reference["commands-ref"]
-        verify["verification tab"]
-        progress["progress · localStorage"]
-        shell --> core
-        shell --> terminal
-        shell --> graph
-        shell --> levels
-        shell --> reference
-        shell --> verify
-        shell --> progress
-        terminal --> core
-        graph --> core
-        levels --> core
-        reference --> core
-    end
-
-    harness["Node harness · diff-test + benchmark"]
-    git[("git thật trong tmpdir")]
-    report["public/verification.json"]
-    harness --> core
-    harness --> graph
-    harness <--> git
-    harness --> report
-    report --> verify
+```bash
+npm run diff:quick
+npm run bench
 ```
 
-- `core/` không phụ thuộc React, DOM, browser API hoặc UI; harness Node import trực tiếp engine.
-- Parser kiểm cú pháp; engine kiểm trạng thái repository. UI state thay đổi qua application store.
-- Layout tất định và không sửa `RepoState`.
-- Tiến độ chỉ nằm trong localStorage. Static build không cần backend.
-- Các tab gặp nhau qua `app/store.ts`; Command Reference dùng lại layout và engine cho sơ đồ mini.
+- `diff:quick` compares GitScope with the locally installed Git over a small exhaustive command set. A local Git version other than 2.43 is reported explicitly.
+- `bench` measures deterministic graph layout at 100, 1,000, 10,000 and 100,000 commits.
+- The longer nightly workflow and browser benchmark are documented in [the final report](docs/FINAL_REPORT.md); they are not required to run the app.
 
-## Cấu trúc chính
+Tests live beside their source files. The normal CI workflow runs typecheck, unit tests, import-boundary checks, the production build, a depth-2 differential gate and a browser benchmark smoke test.
 
-```
-src/core/          Git engine thuần
-src/viz/           visualizer và layout thuần
-src/terminal/      parser, formatter và terminal UI
-src/levels/        schema, goal checker và 8 level
-src/progress/      localStorage progress store
-src/verification/  tab đọc public/verification.json
-src/commands-ref/  tham chiếu 5 lệnh và sơ đồ mini
-src/app/           app shell và store
-harness/           differential test và benchmark chạy bằng Node
+## Run the production build offline
+
+Install dependencies and build once while dependencies are available, then serve the already-built files locally:
+
+```bash
+npm run build
+npm run preview -- --host 127.0.0.1
 ```
 
-## Trạng thái hiện tại
+Open `http://127.0.0.1:4173`, then the machine may be disconnected from the internet while the preview process remains running. The app, its assets and `verification.json` are local and require no runtime backend or external service.
 
-M4 hoàn tất; bằng chứng differential test, invalid gate, benchmark và report CI được ghi trong [docs/STATUS.md](docs/STATUS.md). M5 chính thức chốt sản phẩm Tier 1-only. Còn lại là issues #61–#64, sau đó UI polish, stability và demo M6. Kế hoạch chi tiết ở [docs/ISSUES.md](docs/ISSUES.md).
+Do not open `dist/index.html` directly with a `file://` URL: browser module and fetch rules require an HTTP server. GitScope does not install a service worker, so it does not promise that a previously hosted deployment can be reopened after its server becomes unavailable.
+
+## Supported commands
+
+The terminal parser accepts only the following syntax:
+
+| Command | Supported forms | Effect |
+|---|---|---|
+| `commit` | `git commit`, `git commit -m "message"` | Creates a commit. An attached branch moves to it; detached `HEAD` moves without changing a branch. |
+| `branch` | `git branch`, `git branch <name>` | Lists branches or creates a branch at the current commit. It does not switch branches. |
+| `switch` | `git switch <branch>`, `git switch -c <branch>`, `git switch --detach <commit-or-branch>` | Attaches `HEAD` to a branch, creates and switches to a branch, or explicitly detaches `HEAD`. |
+| `checkout` | `git checkout <branch-or-commit>`, `git checkout -b <branch>` | Switches to a branch, detaches at a commit, or creates and switches to a branch. |
+| `merge` | `git merge <branch>` | Reports already-up-to-date, performs a fast-forward, or creates a two-parent merge commit. |
+
+The parser validates syntax; the engine validates repository state. Unsupported flags and subcommands return an error instead of being passed to the host machine.
+
+## Architecture
+
+```text
+Terminal input
+    -> syntax parser
+    -> pure Git engine -> RepoState -> deterministic layout -> SVG graph
+                         |         -> level goal checker
+                         |         -> undo/redo snapshots
+                         +-------- -> application store -> React UI
+
+localStorage <-> level progress
+verification.json -> Verification tab
+
+Node harness -> GitScope engine <-> real Git
+             -> layout/browser benchmarks
+             -> verification.json
+```
+
+Key boundaries:
+
+- `src/core/` is independent of React, the DOM and browser APIs. Commands return a new serializable `RepoState`; errors are values rather than thrown exceptions.
+- `src/terminal/` owns tokenization and syntax validation.
+- `src/app/store.ts` is the path for UI state changes and owns undo/redo integration.
+- `src/viz/` computes deterministic layout without mutating repository state, then renders SVG.
+- `src/levels/` contains eight levels and the DAG-isomorphism goal checker.
+- `src/progress/` persists only level completion records in `localStorage`.
+- `src/verification/` validates and displays the CI-generated `public/verification.json`.
+- `harness/` runs differential tests and benchmarks in Node.js.
+
+## Product limits
+
+GitScope models commits, parent relationships, branch pointers and attached/detached `HEAD`. It does not model file contents, a working tree, staging, `git add`, content conflicts, remotes, rebase, tags or arbitrary Git flags. Merge conflict detection therefore always returns no content conflict.
+
+Commit IDs such as `c1` are simulator IDs, not Git hashes. Some success and advice text is intentionally shorter than real Git; the verification report records those wording differences as soft warnings.
+
+Progress is local to one browser profile. Clearing site data removes it. The current user-evaluation dataset has no participant rows, so the project makes no measured claim about learning outcomes or usability; see [evaluation results](docs/evaluation/RESULTS.md).
+
+## Repository map
+
+```text
+src/core/          pure Git engine and history
+src/terminal/      parser, terminal session and UI
+src/viz/           deterministic layout and graph rendering
+src/levels/        eight levels and goal checker
+src/progress/      localStorage progress
+src/verification/  report validation and Verification UI
+src/commands-ref/  five-command reference
+src/app/           application shell and store
+harness/           differential and benchmark tooling
+docs/evaluation/   protocol, raw schema and evaluation status
+```
+
+Start with the [PRD](docs/PRD.md), [technical overview](docs/TECHNICAL_OVERVIEW.md) and [final report](docs/FINAL_REPORT.md) for the product contract and evidence.
